@@ -1,7 +1,10 @@
+body {
+    padding-bottom: 50px;
+}
 
 .free {
-background-color:#4444ff;
+    background-color:#4444ff;
 }
 .reserved {
-background-color:#ff0000;
+    background-color:#ff0000;
 }

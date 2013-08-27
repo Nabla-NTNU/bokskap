@@ -6,17 +6,17 @@
     <link rel="stylesheet" type="text/css" href="/static/lockers.css">
     <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/css/bootstrap-combined.min.css" rel="stylesheet">
     <title>
-        {% block title %}Reservasjon av skap på Realfagbygget{% endblock title %}
+        {% block title %}Reservasjon av skap i Realfagbygget{% endblock title %}
     </title>
 </head>
 <body>
     <div class="container">
-        <h1>Registrering av skap på Realfagbygget</h1>
+        <h1>Registrering av skap i Realfagbygget</h1>
         <div class="navbar">
             <div class="navbar-inner">
             <div class="container">
                 <ul class="nav">
-                    <li><a href="/">Home</a></li>
+                    <li><a href="/">Hjem</a></li>
                     <li><a href="{% url "locker.views.list_lockers" room="CU1-111" %}">CU1-111</a></li>
                     <li><a href="{% url "locker.views.list_lockers" room="CU2-021" %}">CU2-021</a></li>
                     <li><a href="{% url "locker.views.list_lockers" room="EU1-110" %}">EU1-110</a></li>

@@ -1,20 +1,23 @@
 {% extends "base.html" %}
 
 {% block content %}
-<p>
-Du har valgt skap <strong>{{locker_number}}</strong> i rom
-<strong>{{room}}</strong>.
-</p>
-<p>
-For å reservere skapet fyller du ut skjemaet nedenfor, og bekrefter
-reservasjonen ved å trykke på lenken som blir sendt til din <strong>@stud.ntnu.no</strong>
-epostadresse.
-</p>
 
-<form action="" method="post" >{% csrf_token %}
-{{ userForm.as_p }}
+<p>Du har valgt skap <strong>{{locker_number}}</strong> 
+   i rom <strong>{{room}}</strong>.</p>
 
-<button type="submit" class="btn primary">Reserver</button>
+<p>For å registrere skapet fyller du ut skjemaet nedenfor, og bekrefter
+registreringen ved å trykke på lenken som blir sendt til din
+<strong>@stud.ntnu.no</strong> epostadresse.</p>
+
+<form method="post" >
+    <fieldset>
+        <legend>Registrer skap</legend>
+        {% csrf_token %}
+        {{ userForm.as_p }}
+        <button type="submit" class="btn btn-primary">
+            <span class="icon icon-tag icon-white"></span>
+            Register skap</button>
+    </fieldset>
 </form>
 
 {% endblock %}
