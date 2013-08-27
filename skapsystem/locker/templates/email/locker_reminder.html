@@ -1,0 +1,8 @@
+<p>Skap du disponerer i Realfagbygget:</p>
+<ul>
+{% for l in lockers %}
+<li>Skap nummer {{l.locker_number}} i {{l.room}} (reservert {{l.time_reserved|date}})</li>
+{% endfor %}
+</ul>
+
+

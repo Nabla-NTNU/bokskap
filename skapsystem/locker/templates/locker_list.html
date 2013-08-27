@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+
+<ul id="room_list">
+  {% for lroom in locker_rooms %}
+  <li><a href="{% url 'locker.views.list_lockers' room=lroom %}">lroom</a></li>
+  {%endfor%}
+</ul>
+<div class="span6">
+<table class="table" >
+  <tr>
+    <th>Skapnr.</th>
+    <th>Status</th>
+  </tr>
+{% for locker in lockers %}
+  {% if locker.is_reserved %}
+  <tr class="warning">
+    <td>{{locker.locker_number}}</td>
+    <td>Opptatt</td>
+  </tr>
+  {% else %}
+  <tr class="success">
+    <td>{{locker.locker_number}}</td>
+    <td><a href="{% url 'locker.views.register_locker' room=locker.room locker_number=locker.locker_number %}">
+      Ledig</a></td>
+    </a>
+  </tr>
+  {% endif %}
+{% endfor %}
+
+</table>
+</div>
+{% endblock %}

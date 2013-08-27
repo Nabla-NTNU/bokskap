@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<p>Bokskapene i rommene CU1-111, CU2-021 og EU1-110 i Realfagbygget blir administrert av Linjeforeningen Nabla.
+Hvis du vil ha et skap må du gå til ett av disse rommene, sette på en hengelås og registrere deg her.</p>
+
+<p>Finn skapet ditt:</p>
+
+<form action="" method="post" >{% csrf_token %}
+  {{ lockerSearchForm.as_p }}
+</form>
+{% endblock %}
