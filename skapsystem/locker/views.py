@@ -70,7 +70,7 @@ def register_locker(request,room,locker_number):
                 request.session['locker_number'] = locker_number
                 confirmation_key = hashlib.md5(str(random.random())).hexdigest()
                 request.session['confirmation_key'] = confirmation_key
-                confirmation_url = request.build_absolute_uri(reverse(registration_confirmation, kwargs={'key':confirmation_key}))
+                confirmation_url = 'http://bokskap.nabla.no'+reverse(registration_confirmation, kwargs={'key':confirmation_key})
                 subject = 'Bekreftelse av reservasjon av skap %s i %s' % (locker_number,room)
                 from_email = 'ikke_svar@nabla.ntnu.no'
 
