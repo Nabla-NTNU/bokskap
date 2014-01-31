@@ -33,19 +33,23 @@ def list_lockers(request, room):
 def locker_reminder(request):
     if request.method == 'POST':
         username = request.POST['username']
-        user = User.objects.get(username=username)
-        subject = u'Liste over bokskap tilhørende %s' % (user.get_full_name())
-        from_email = 'ikke_svar@nabla.ntnu.no'
-        lockers = user.locker_set.all()
+        try:
+            user = User.objects.get(username=username)
+            subject = u'Liste over bokskap tilhørende %s' % (user.get_full_name())
+            from_email = 'ikke_svar@nabla.ntnu.no'
+            lockers = user.locker_set.all()
 
-        c = Context({'lockers':lockers})
-        html_content = render_to_string('email/locker_reminder.html',c)
-        text_content = strip_tags(html_content)
+            c = Context({'lockers':lockers})
+            html_content = render_to_string('email/locker_reminder.html',c)
+            text_content = strip_tags(html_content)
 
-        msg = EmailMultiAlternatives(subject, text_content, from_email, [user.email])
-        msg.attach_alternative(html_content, "text/html")
-        msg.send()
-        messages.add_message(request, messages.INFO, u'En liste over dine skap har blitt sendt til %s' % user.email)
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [user.email])
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+            messages.add_message(request, messages.INFO, u'En liste over dine skap har blitt sendt til %s' % user.email)
+        except User.DoesNotExist:
+            messages.add_message(request, messages.INFO, u'Brukeren {} finnes ikke i skapdatabasen.'.format(username))
+
     return render(request, 'forgotten_lockers.html')
 
 
