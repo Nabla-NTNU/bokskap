@@ -1,5 +1,6 @@
 from django.contrib import admin
 from locker.models import Locker
+from locker.models import InactiveLockerReservation
 
 class HasOwnerListFilter(admin.SimpleListFilter):
     title = 'status'
@@ -34,4 +35,9 @@ class LockerAdmin(admin.ModelAdmin):
         for s in queryset.all():
             s.unreserve(lock_cut=False)
 
+class InactiveLockerReservationAdmin(admin.ModelAdmin):
+    pass
+
 admin.site.register(Locker, LockerAdmin)
+admin.site.register(InactiveLockerReservation, InactiveLockerReservationAdmin)
+
