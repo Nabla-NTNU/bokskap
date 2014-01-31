@@ -39,16 +39,17 @@ class Locker(models.Model):
         self.save()
 
     def unreserve(self, lock_cut = False):
-        inactive = InactiveLockerReservation()
-        inactive.owner = self.owner
-        inactive.lock_cut = lock_cut
-        inactive.locker = self
-        inactive.time_unreserved = datetime.now()
-        inactive.time_reserved = self.time_reserved
-        inactive.save()
-        self.time_reserved = None
-        self.owner = None
-        self.save()
+        if self.is_reserved():
+            inactive = InactiveLockerReservation()
+            inactive.owner = self.owner
+            inactive.lock_cut = lock_cut
+            inactive.locker = self
+            inactive.time_unreserved = datetime.now()
+            inactive.time_reserved = self.time_reserved
+            inactive.save()
+            self.time_reserved = None
+            self.owner = None
+            self.save()
 
     def is_reserved(self):
         return bool(self.owner)
