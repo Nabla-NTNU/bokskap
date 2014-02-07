@@ -65,3 +65,6 @@ class InactiveLockerReservation(models.Model):
     lock_cut = models.BooleanField(blank = False) # Indikerer om låsen på skapet ble klippet av Nabla
     owner = models.ForeignKey(User, blank = False)
     locker = models.ForeignKey(Locker, blank = False)
+
+    def __unicode__(self):
+        return u'(%s , %s) ' % (self.locker, self.owner)
