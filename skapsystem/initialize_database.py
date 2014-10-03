@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from django.core.management import setup_environ
-import skapsystem.settings
-setup_environ(skapsystem.settings)
+import os
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "skapsystem.settings")
 
 from locker.models import *
 

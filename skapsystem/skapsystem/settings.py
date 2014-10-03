@@ -127,7 +127,6 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     'django.contrib.admindocs',
     'locker',
-    'south',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -158,6 +157,8 @@ LOGGING = {
         },
     }
 }
+
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 try:
     from local_settings import *

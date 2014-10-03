@@ -5,19 +5,6 @@ from django.core.mail import send_mail
 from django.contrib.auth.models import User
 
 
-#class User(models.Model):
-#    ntnu_username = models.CharField(max_length = 10, unique = True, blank = False)
-#    full_name = models.CharField(max_length = 30, blank = False)
-#    first_name = models.CharField(max_length = 30, blank = False)
-#    last_name = models.CharField(max_length = 30, blank = False)
-
-#    def mail_user(self, subject, message):
-#        #send_mail(subject, message, 'noreply@nabla.ntnu.no', [self.ntnu_username+'@stud.ntnu.no'])
-#        print "Epost sendt til " + self.ntnu_username + " " + subject
-
-#    def __unicode__(self):
-#        return u'%s' % self.ntnu_username
-
 class Locker(models.Model):
 
     ROOMS = (
@@ -62,7 +49,7 @@ class InactiveLockerReservation(models.Model):
 
  # Datoen enten brukeren avregistrerte skapet eller Nabla klippet opp låsen og fjernet innholdet.
     time_unreserved = models.DateTimeField(blank = False) 
-    lock_cut = models.BooleanField(blank = False) # Indikerer om låsen på skapet ble klippet av Nabla
+    lock_cut = models.BooleanField(blank = False, default=False) # Indikerer om låsen på skapet ble klippet av Nabla
     owner = models.ForeignKey(User, blank = False)
     locker = models.ForeignKey(Locker, blank = False)
 
