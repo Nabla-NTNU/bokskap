@@ -11,9 +11,11 @@ from django.contrib import messages
 from django.template import Context
 from django.template.loader import get_template, render_to_string
 from django.utils.html import strip_tags
+from django.views.generic import ListView
 
 from locker.models import *
 from locker.forms import *
+
 
 def index_page(request):
     if request.method == "POST":
@@ -25,10 +27,14 @@ def index_page(request):
     context = {'lockerSearchForm': form}
     return render(request, 'index.html',context)
 
-def list_lockers(request, room):
-    lockers = Locker.objects.filter(room = room).order_by('locker_number')
-    context = {'lockers' : lockers}
-    return render(request, 'locker_list.html', context)
+
+class LockerListView(ListView):
+    context_object_name = "lockers"
+
+    def get_queryset(self):
+        room = self.kwargs['room']
+        return Locker.objects.filter(room=room).order_by('locker_number')
+
 
 def locker_reminder(request):
     if request.method == 'POST':
@@ -57,7 +63,7 @@ def register_locker(request, room, locker_number):
     locker = get_object_or_404(Locker, room=room,locker_number=locker_number)
     if locker.owner:
         messages.add_message(request, messages.ERROR, u'Beklager. Skap nummer %s i rom %s er opptatt. Vennligst velg ett annet skap.' % (locker_number, room))
-        return redirect(list_lockers, room=room)
+        return redirect("list_lockers", room=room)
 
     if request.method == "POST":
         userForm = UserForm(request.POST)

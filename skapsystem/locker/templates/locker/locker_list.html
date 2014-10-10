@@ -3,7 +3,7 @@
 
 <ul id="room_list">
   {% for lroom in locker_rooms %}
-  <li><a href="{% url 'locker.views.list_lockers' room=lroom %}">lroom</a></li>
+  <li><a href="{% url 'list_lockers' room=lroom %}">lroom</a></li>
   {%endfor%}
 </ul>
 <div class="span6">
