@@ -8,5 +8,21 @@ class UserForm(forms.Form):
 
 
 class LockerSearchForm(forms.Form):
-    room = forms.ChoiceField(choices = Locker.ROOMS)
-    locker_number = forms.IntegerField()
+    """Skjema for å velge et skap."""
+
+    room = forms.ChoiceField(choices=Locker.ROOMS, required=True, label="Rom")
+    locker_number = forms.IntegerField(required=True, label="Skapnummer")
+
+    def clean(self):
+        cleaned_data = super(LockerSearchForm, self).clean()
+
+        try:
+            room = cleaned_data['room']
+            number = cleaned_data['locker_number']
+            l = Locker.objects.get(room=room, locker_number=number)
+        except Locker.DoesNotExist:
+            raise forms.ValidationError("Dette skapet finnes ikke!")
+        except KeyError:
+            pass
+
+        return cleaned_data

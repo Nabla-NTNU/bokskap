@@ -11,24 +11,27 @@ from django.contrib import messages
 from django.template import Context
 from django.template.loader import get_template, render_to_string
 from django.utils.html import strip_tags
-from django.views.generic import ListView
+from django.views.generic import ListView, FormView
 
 from locker.models import *
 from locker.forms import *
 
 
-def index_page(request):
-    if request.method == "POST":
-        form = LockerSearchForm(request.POST)
-        if form.is_valid() and Locker.objects.filter(room=form.data['room'],locker_number=form.data['locker_number']).exists():
-            return redirect(register_locker, room=form.data['room'], locker_number = form.data['locker_number'])
-    else:
-        form = LockerSearchForm()
-    context = {'lockerSearchForm': form}
-    return render(request, 'index.html',context)
+class IndexPage(FormView):
+    """Viser forsiden og tar seg av valg av skap.
+
+    Hvis skapet finnes blir man sendt til registreringsiden til det skapet.
+    """
+    template_name = "locker/index.html"
+    form_class = LockerSearchForm
+
+    def form_valid(self, form):
+        room = form.cleaned_data['room']
+        number = form.cleaned_data['locker_number']
+        return redirect(register_locker, room=room, locker_number=number)
 
 
-class LockerListView(ListView):
+class LockerRoomView(ListView):
     context_object_name = "lockers"
 
     def get_queryset(self):
