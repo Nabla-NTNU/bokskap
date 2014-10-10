@@ -9,6 +9,7 @@ class UserForm(forms.Form):
     last_name = forms.CharField(max_length=30, required=True, label='Etternavn')
 
 
+
 class LockerSearchForm(forms.Form):
     """Skjema for å velge et skap."""
 
@@ -21,13 +22,23 @@ class LockerSearchForm(forms.Form):
         try:
             room = cleaned_data['room']
             number = cleaned_data['locker_number']
-            l = Locker.objects.get(room=room, locker_number=number)
+            self.locker = Locker.objects.get(room=room, locker_number=number)
         except Locker.DoesNotExist:
             raise forms.ValidationError("Dette skapet finnes ikke!")
         except KeyError:
             pass
 
         return cleaned_data
+
+
+class LockerRegistrationForm(UserForm, LockerSearchForm):
+
+    def clean(self):
+        cleaned_data = super(LockerRegistrationForm, self).clean()
+        if self.locker.is_reserved():
+            raise forms.ValidationError("Skapet er allerede i bruk. Velg et annet skap.")
+        return cleaned_data
+
 
 
 class UsernameForm(forms.Form):

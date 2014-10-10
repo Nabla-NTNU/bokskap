@@ -21,7 +21,7 @@
   {% else %}
   <tr class="success">
     <td>{{locker.locker_number}}</td>
-    <td><a href="{% url 'locker.views.register_locker' room=locker.room locker_number=locker.locker_number %}">
+    <td><a href="{% url 'register_locker' room=locker.room locker_number=locker.locker_number %}">
       Ledig</a></td>
     </a>
   </tr>

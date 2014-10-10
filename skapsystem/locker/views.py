@@ -28,7 +28,7 @@ class IndexPage(FormView):
     def form_valid(self, form):
         room = form.cleaned_data['room']
         number = form.cleaned_data['locker_number']
-        return redirect(register_locker, room=room, locker_number=number)
+        return redirect(view_locker, room=room, locker_number=number)
 
 
 class LockerRoomView(ListView):
@@ -88,40 +88,37 @@ def send_confirmation_email(user, locker, confirmation_key):
     msg.send()
 
 
-def register_locker(request, room, locker_number):
-    locker = get_object_or_404(Locker, room=room, locker_number=locker_number)
-    if locker.owner:
-        messages.add_message(request, messages.ERROR, u'Beklager. Skap nummer %s i rom %s er opptatt. Vennligst velg ett annet skap.' % (locker_number, room))
-        return redirect("list_lockers", room=room)
+class LockerRegistrationView(FormView):
+    template_name = "locker/locker_registration.html"
+    form_class = LockerRegistrationForm
 
-    if request.method == "POST":
-        userForm = UserForm(request.POST)
-        if userForm.is_valid():
-            user, created = User.objects.get_or_create(username=userForm.data['username'])
-            if created or not(user.email):
-                user.email = "%s@stud.ntnu.no" % user.username
-                user.save()
-            if user.locker_set.count() > 3 :
-                messages.add_message(request, messages.ERROR, u'Beklager, men brukeren %s har nådd maksgrensen på tre skap.' % user.username)
-            else:
-                request.session['post_data'] = request.POST
-                request.session['room'] = room
-                request.session['locker_number'] = locker_number
-                confirmation_key = hashlib.md5(str(random.random()).encode()).hexdigest()
-                request.session['confirmation_key'] = confirmation_key
+    def form_valid(self, form):
+        locker = form.locker
+        username = form.cleaned_data["username"]
+        user, created = User.objects.get_or_create(username=username)
 
-                send_confirmation_email(user, locker, confirmation_key)
-                messages.add_message(request, messages.INFO, u'En bekreftelsesepost er sendt til %s' % user.email)
-    else:
-        userForm = UserForm()
+        if created or not(user.email):
+            user.email = "%s@stud.ntnu.no" % user.username
+            user.save()
+        if user.locker_set.count() > 3 :
+            messages.add_message(self.request, messages.ERROR, u'Beklager, men brukeren %s har nådd maksgrensen på tre skap.' % user.username)
+        else:
+            self.request.session['post_data'] = self.request.POST
+            self.request.session['room'] = locker.room
+            self.request.session['locker_number'] = locker.locker_number
+            confirmation_key = hashlib.md5(str(random.random()).encode()).hexdigest()
+            self.request.session['confirmation_key'] = confirmation_key
 
-    c = {
-           'userForm': userForm,
-           'room':room,
-           'locker_number': locker_number,
-           'locker_rooms': [x for x in Locker.ROOMS],
-    }
-    return render(request, 'registration.html', c)
+            send_confirmation_email(user, locker, confirmation_key)
+            messages.add_message(self.request, messages.INFO, u'En bekreftelsesepost er sendt til %s' % user.email)
+
+        return redirect("index_page")
+
+
+def view_locker(request, room, locker_number):
+    the_view = LockerRegistrationView.as_view(initial={'room': room, 'locker_number': locker_number})
+    return the_view(request)
+
 
 def registration_confirmation(request, key):
     try:
