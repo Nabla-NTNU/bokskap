@@ -53,7 +53,7 @@ def locker_reminder(request):
     return render(request, 'forgotten_lockers.html')
 
 
-def register_locker(request,room,locker_number):
+def register_locker(request, room, locker_number):
     locker = get_object_or_404(Locker, room=room,locker_number=locker_number)
     if locker.owner:
         messages.add_message(request, messages.ERROR, u'Beklager. Skap nummer %s i rom %s er opptatt. Vennligst velg ett annet skap.' % (locker_number, room))
@@ -62,7 +62,7 @@ def register_locker(request,room,locker_number):
     if request.method == "POST":
         userForm = UserForm(request.POST)
         if userForm.is_valid():
-            user,created = User.objects.get_or_create(username=userForm.data['username'])
+            user, created = User.objects.get_or_create(username=userForm.data['username'])
             if created or not(user.email):
                 user.email = "%s@stud.ntnu.no" % user.username
                 user.save()
@@ -72,7 +72,7 @@ def register_locker(request,room,locker_number):
                 request.session['post_data'] = request.POST
                 request.session['room'] = room
                 request.session['locker_number'] = locker_number
-                confirmation_key = hashlib.md5(str(random.random())).hexdigest()
+                confirmation_key = hashlib.md5(str(random.random()).encode()).hexdigest()
                 request.session['confirmation_key'] = confirmation_key
                 confirmation_url = 'http://bokskap.nabla.no'+reverse(registration_confirmation, kwargs={'key':confirmation_key})
                 subject = 'Bekreftelse av reservasjon av skap %s i %s' % (locker_number,room)
@@ -89,17 +89,23 @@ def register_locker(request,room,locker_number):
 
     else:
         userForm = UserForm()
-    c = Context({
+
+    c = {
            'userForm': userForm,
            'room':room,
            'locker_number': locker_number,
            'locker_rooms': [x for x in Locker.ROOMS],
-    })
+    }
     return render(request, 'registration.html', c)
 
 def registration_confirmation(request, key):
-    if request.session['confirmation_key'] != key:
-        return Http404
+    try:
+        confirmation_key = request.session['confirmation_key']
+        if key != confirmation_key:
+            raise KeyError
+    except KeyError:
+        raise Http404
+
     post_data = request.session['post_data']
     locker = get_object_or_404(Locker, room=request.session['room'],locker_number=request.session['locker_number'])
     user = User.objects.get(username = post_data['username'])

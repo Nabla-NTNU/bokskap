@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for room, num_lockers in rooms:
-            for locker_number in xrange(1,num_lockers+1):
+            for locker_number in range(1,num_lockers+1):
                 l = Locker.objects.get_or_create(room = room, locker_number = locker_number)
         print("Created the lockers")
 
