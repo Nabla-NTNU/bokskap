@@ -37,7 +37,7 @@ class LockerListView(ListView):
 
 
 def send_locker_reminder(user):
-    """Sender på epost info om hvilke skap brukeren har."""
+    """Sender på epost med info om hvilke skap brukeren har."""
 
     subject = u'Liste over bokskap tilhørende %s' % (user.get_full_name())
     from_email = 'ikke_svar@nabla.ntnu.no'
@@ -65,8 +65,25 @@ def locker_reminder(request):
     return render(request, 'forgotten_lockers.html')
 
 
+def send_confirmation_email(user, locker, confirmation_key):
+    confirmation_url = 'http://bokskap.nabla.no'+reverse(registration_confirmation, kwargs={'key': confirmation_key})
+    subject = 'Bekreftelse av reservasjon av skap %s i %s' % (locker.locker_number, locker.room)
+    from_email = 'ikke_svar@nabla.ntnu.no'
+
+    c = Context({"confirmation_url": confirmation_url,
+                 "room": locker.room,
+                 "locker_number": locker.locker_number
+                 })
+    html_content = render_to_string('email/confirmation_email.html', c)
+    text_content = strip_tags(html_content)
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [user.email])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
+
 def register_locker(request, room, locker_number):
-    locker = get_object_or_404(Locker, room=room,locker_number=locker_number)
+    locker = get_object_or_404(Locker, room=room, locker_number=locker_number)
     if locker.owner:
         messages.add_message(request, messages.ERROR, u'Beklager. Skap nummer %s i rom %s er opptatt. Vennligst velg ett annet skap.' % (locker_number, room))
         return redirect("list_lockers", room=room)
@@ -86,19 +103,9 @@ def register_locker(request, room, locker_number):
                 request.session['locker_number'] = locker_number
                 confirmation_key = hashlib.md5(str(random.random()).encode()).hexdigest()
                 request.session['confirmation_key'] = confirmation_key
-                confirmation_url = 'http://bokskap.nabla.no'+reverse(registration_confirmation, kwargs={'key':confirmation_key})
-                subject = 'Bekreftelse av reservasjon av skap %s i %s' % (locker_number,room)
-                from_email = 'ikke_svar@nabla.ntnu.no'
 
-                c = Context({"confirmation_url":confirmation_url, "room":room, "locker_number":locker_number})
-                html_content = render_to_string('email/confirmation_email.html',c)
-                text_content = strip_tags(html_content)
-
-                msg = EmailMultiAlternatives(subject, text_content, from_email, [user.email])
-                msg.attach_alternative(html_content, "text/html")
-                msg.send()
+                send_confirmation_email(user, locker, confirmation_key)
                 messages.add_message(request, messages.INFO, u'En bekreftelsesepost er sendt til %s' % user.email)
-
     else:
         userForm = UserForm()
 
