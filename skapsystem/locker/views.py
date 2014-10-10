@@ -4,6 +4,7 @@ import hashlib
 
 from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
+from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
@@ -88,6 +89,11 @@ def send_confirmation_email(user, locker, confirmation_key):
     msg.send()
 
 
+def view_locker(request, room, locker_number):
+    the_view = LockerRegistrationView.as_view(initial={'room': room, 'locker_number': locker_number})
+    return the_view(request)
+
+
 class LockerRegistrationView(FormView):
     template_name = "locker/locker_registration.html"
     form_class = LockerRegistrationForm
@@ -103,48 +109,48 @@ class LockerRegistrationView(FormView):
         if user.locker_set.count() > 3 :
             messages.add_message(self.request, messages.ERROR, u'Beklager, men brukeren %s har nådd maksgrensen på tre skap.' % user.username)
         else:
-            confirmation_key = create_confirmation_key(locker, self.request)
-            send_confirmation_email(user, locker, confirmation_key)
+            token = create_confirmation_token(locker, self.request.POST)
+            send_confirmation_email(user, locker, token)
             messages.add_message(self.request, messages.INFO, u'En bekreftelsesepost er sendt til %s' % user.email)
 
         return redirect("index_page")
 
 
-def create_confirmation_key(locker, request):
-
+def create_confirmation_token(locker, post_data):
     confirmation_key = hashlib.md5(str(random.random()).encode()).hexdigest()
-    request.session['confirmation_key'] = confirmation_key
 
-    request.session['post_data'] = request.POST
-    request.session['room'] = locker.room
-    request.session['locker_number'] = locker.locker_number
+    the_data = {'post_data': post_data,
+                'room': locker.room,
+                'locker_number': locker.locker_number,
+                }
+
+    cache.set(confirmation_key, the_data, None)
     return confirmation_key
 
 
-def get_user_and_locker_from_key(key, request):
-    try:
-        confirmation_key = request.session['confirmation_key']
-    except KeyError:
-        raise Http404
-    if key != confirmation_key:
-        raise Http404
+def save_locker_registration(token):
+    the_data = cache.get(token)
+    if the_data is None:
+        raise KeyError
 
-    post_data = request.session['post_data']
-    locker = get_object_or_404(Locker, room=request.session['room'], locker_number=request.session['locker_number'])
-    user = User.objects.get(username = post_data['username'])
+    post_data = the_data['post_data']
+    room = the_data['room']
+    locker_number = the_data['locker_number']
+
+    locker = get_object_or_404(Locker, room=room, locker_number=locker_number)
+
+    user = User.objects.get(username=post_data['username'])
     user.first_name = post_data['first_name']
     user.last_name = post_data['last_name']
+    user.save()
+    locker.reserve(user)
     return user, locker
 
 
-def view_locker(request, room, locker_number):
-    the_view = LockerRegistrationView.as_view(initial={'room': room, 'locker_number': locker_number})
-    return the_view(request)
-
-
 def registration_confirmation(request, key):
-    user, locker = get_user_and_locker_from_key(key, request)
-    user.save()
-    locker.reserve(user)
+    try:
+        user, locker = save_locker_registration(key)
+    except KeyError:
+        raise Http404
     messages.add_message(request, messages.INFO, u'Skap nummer %d i %s rom  er nå registrert på %s' % (locker.locker_number, locker.room, user.username))
     return redirect('/list/'+locker.room)
