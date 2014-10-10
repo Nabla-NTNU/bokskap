@@ -1,5 +1,7 @@
 from django import forms
+from django.contrib.auth.models import User
 from locker.models import *
+
 
 class UserForm(forms.Form):
     username = forms.CharField(max_length=30, required=True, label='NTNU-brukernavn')
@@ -25,4 +27,20 @@ class LockerSearchForm(forms.Form):
         except KeyError:
             pass
 
+        return cleaned_data
+
+
+class UsernameForm(forms.Form):
+    """Skjema for ta inn kun et brukernavn og samtidig skjekke om brukeren finnes."""
+    username = forms.CharField(max_length=30, required=True, label='NTNU-brukernavn')
+
+    def clean(self):
+        cleaned_data = super(UsernameForm, self).clean()
+        try:
+            username = cleaned_data['username']
+            u = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise forms.ValidationError('Brukeren {} finnes ikke i skapdatabasen.'.format(username))
+        except KeyError:
+            pass
         return cleaned_data

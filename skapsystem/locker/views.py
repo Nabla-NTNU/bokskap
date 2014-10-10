@@ -55,17 +55,20 @@ def send_locker_reminder(user):
     msg.send()
 
 
-def locker_reminder(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        try:
-            user = User.objects.get(username=username)
-            send_locker_reminder(user)
-            messages.add_message(request, messages.INFO, u'En liste over dine skap har blitt sendt til %s' % user.email)
-        except User.DoesNotExist:
-            messages.add_message(request, messages.INFO, u'Brukeren {} finnes ikke i skapdatabasen.'.format(username))
+class LockerReminder(FormView):
+    """View for å vise et skjema for påminnelse om skapnummer.
 
-    return render(request, 'forgotten_lockers.html')
+    Bruker UsernameForm for å skjekke om brukeren finnes for deretter å sende epost til brukeren.
+    """
+    template_name = "locker/forgotten_lockers.html"
+    form_class = UsernameForm
+
+    def form_valid(self, form):
+        username = form.cleaned_data['username']
+        user = User.objects.get(username=username)
+        send_locker_reminder(user)
+        messages.add_message(self.request, messages.INFO, u'En liste over dine skap har blitt sendt til %s' % user.email)
+        return redirect("index_page")
 
 
 def send_confirmation_email(user, locker, confirmation_key):
