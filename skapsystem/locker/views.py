@@ -103,16 +103,38 @@ class LockerRegistrationView(FormView):
         if user.locker_set.count() > 3 :
             messages.add_message(self.request, messages.ERROR, u'Beklager, men brukeren %s har nådd maksgrensen på tre skap.' % user.username)
         else:
-            self.request.session['post_data'] = self.request.POST
-            self.request.session['room'] = locker.room
-            self.request.session['locker_number'] = locker.locker_number
-            confirmation_key = hashlib.md5(str(random.random()).encode()).hexdigest()
-            self.request.session['confirmation_key'] = confirmation_key
-
+            confirmation_key = create_confirmation_key(locker, self.request)
             send_confirmation_email(user, locker, confirmation_key)
             messages.add_message(self.request, messages.INFO, u'En bekreftelsesepost er sendt til %s' % user.email)
 
         return redirect("index_page")
+
+
+def create_confirmation_key(locker, request):
+
+    confirmation_key = hashlib.md5(str(random.random()).encode()).hexdigest()
+    request.session['confirmation_key'] = confirmation_key
+
+    request.session['post_data'] = request.POST
+    request.session['room'] = locker.room
+    request.session['locker_number'] = locker.locker_number
+    return confirmation_key
+
+
+def get_user_and_locker_from_key(key, request):
+    try:
+        confirmation_key = request.session['confirmation_key']
+    except KeyError:
+        raise Http404
+    if key != confirmation_key:
+        raise Http404
+
+    post_data = request.session['post_data']
+    locker = get_object_or_404(Locker, room=request.session['room'], locker_number=request.session['locker_number'])
+    user = User.objects.get(username = post_data['username'])
+    user.first_name = post_data['first_name']
+    user.last_name = post_data['last_name']
+    return user, locker
 
 
 def view_locker(request, room, locker_number):
@@ -121,21 +143,8 @@ def view_locker(request, room, locker_number):
 
 
 def registration_confirmation(request, key):
-    try:
-        confirmation_key = request.session['confirmation_key']
-        if key != confirmation_key:
-            raise KeyError
-    except KeyError:
-        raise Http404
-
-    post_data = request.session['post_data']
-    locker = get_object_or_404(Locker, room=request.session['room'],locker_number=request.session['locker_number'])
-    user = User.objects.get(username = post_data['username'])
-    user.first_name = post_data['first_name']
-    user.last_name = post_data['last_name']
+    user, locker = get_user_and_locker_from_key(key, request)
     user.save()
     locker.reserve(user)
-    messages.add_message(request, messages.INFO, u'Skap nummer %d i %s rom  er nå registrert på %s' % (locker.locker_number,locker.room,user.username))
+    messages.add_message(request, messages.INFO, u'Skap nummer %d i %s rom  er nå registrert på %s' % (locker.locker_number, locker.room, user.username))
     return redirect('/list/'+locker.room)
-
-
