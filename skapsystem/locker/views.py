@@ -36,22 +36,28 @@ class LockerListView(ListView):
         return Locker.objects.filter(room=room).order_by('locker_number')
 
 
+def send_locker_reminder(user):
+    """Sender på epost info om hvilke skap brukeren har."""
+
+    subject = u'Liste over bokskap tilhørende %s' % (user.get_full_name())
+    from_email = 'ikke_svar@nabla.ntnu.no'
+    lockers = user.locker_set.all()
+
+    c = Context({'lockers':lockers})
+    html_content = render_to_string('email/locker_reminder.html',c)
+    text_content = strip_tags(html_content)
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [user.email])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
+
 def locker_reminder(request):
     if request.method == 'POST':
         username = request.POST['username']
         try:
             user = User.objects.get(username=username)
-            subject = u'Liste over bokskap tilhørende %s' % (user.get_full_name())
-            from_email = 'ikke_svar@nabla.ntnu.no'
-            lockers = user.locker_set.all()
-
-            c = Context({'lockers':lockers})
-            html_content = render_to_string('email/locker_reminder.html',c)
-            text_content = strip_tags(html_content)
-
-            msg = EmailMultiAlternatives(subject, text_content, from_email, [user.email])
-            msg.attach_alternative(html_content, "text/html")
-            msg.send()
+            send_locker_reminder(user)
             messages.add_message(request, messages.INFO, u'En liste over dine skap har blitt sendt til %s' % user.email)
         except User.DoesNotExist:
             messages.add_message(request, messages.INFO, u'Brukeren {} finnes ikke i skapdatabasen.'.format(username))
