@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load bootstrap3 %}
 
 {% block content %}
 
@@ -10,10 +11,11 @@ registreringen ved å trykke på lenken som blir sendt til din
     <fieldset>
         <legend>Registrer skap</legend>
         {% csrf_token %}
-        {{ form.as_p }}
+        {% bootstrap_form form %}
         <button type="submit" class="btn btn-primary">
-            <span class="icon icon-tag icon-white"></span>
-            Register skap</button>
+            <span class="glyphicon glyphicon-tag glyphicon-white"></span>
+            Register skap
+        </button>
     </fieldset>
 </form>
 

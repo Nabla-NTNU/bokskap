@@ -2,31 +2,33 @@
 {% block content %}
 
 <ul id="room_list">
-  {% for lroom in locker_rooms %}
-  <li><a href="{% url 'list_lockers' room=lroom %}">lroom</a></li>
-  {%endfor%}
+    {% for lroom in locker_rooms %}
+    <li><a href="{% url 'list_lockers' room=lroom %}">lroom</a></li>
+    {%endfor%}
 </ul>
-<div class="span6">
+<div class="col-lg-6">
 <table class="table" >
-  <tr>
-    <th>Skapnr.</th>
-    <th>Status</th>
-  </tr>
-{% for locker in lockers %}
-  {% if locker.is_reserved %}
-  <tr class="warning">
-    <td>{{locker.locker_number}}</td>
-    <td>Opptatt</td>
-  </tr>
-  {% else %}
-  <tr class="success">
-    <td>{{locker.locker_number}}</td>
-    <td><a href="{% url 'register_locker' room=locker.room locker_number=locker.locker_number %}">
-      Ledig</a></td>
-    </a>
-  </tr>
-  {% endif %}
-{% endfor %}
+    <tr>
+        <th>Skapnr.</th>
+        <th>Status</th>
+    </tr>
+    {% for locker in lockers %}
+        {% if locker.is_reserved %}
+            <tr class="warning">
+                <td>{{ locker.locker_number }}</td>
+                <td>Opptatt</td>
+            </tr>
+        {% else %}
+            <tr class="success">
+                <td>{{ locker.locker_number }}</td>
+                <td>
+                    <a href="{% url 'register_locker' room=locker.room locker_number=locker.locker_number %}">
+                        Ledig
+                    </a>
+                </td>
+            </tr>
+        {% endif %}
+    {% endfor %}
 
 </table>
 </div>

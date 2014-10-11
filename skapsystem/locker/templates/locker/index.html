@@ -1,22 +1,24 @@
 {% extends "base.html" %}
+{% load bootstrap3 %}
 
 {% block content %}
 
 <p>Bokskapene i rommene CU1-111, CU2-021 og EU1-110 i Realfagbygget blir administrert av Linjeforeningen Nabla.</p>
 <p>Hvis du vil ha et skap må du gå til ett av disse rommene, sette på en hengelås og registrere deg her.</p>
-<p>Ta kontakt med <a href="mailto:nestleder@nabla.ntnu.no">nestleder@nabla.ntnu.no</a> eller 
-   <a href="mailto:webkom@nabla.ntnu.no">webkom@nabla.ntnu.no</a> for hjelp.</p>
+<p>
+    Ta kontakt med <a href="mailto:nestleder@nabla.ntnu.no">nestleder@nabla.ntnu.no</a>
+    eller <a href="mailto:webkom@nabla.ntnu.no">webkom@nabla.ntnu.no</a> for hjelp.
+</p>
 
 
-<form method="post" >
-    <fieldset>
-        <legend>Velg skap</legend>
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">
-            Velg skap
-        </button>
-    </fieldset>
+<form class="col-md-6" method="post" >
+    <legend>Velg skap</legend>
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <button type="submit" class="btn btn-primary">
+        Velg skap
+    </button>
 </form>
+
 
 {% endblock %}

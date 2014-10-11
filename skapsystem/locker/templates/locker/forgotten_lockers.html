@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% load bootstrap3 %}
+
 {% block content %}
 
 <p>Har du glemt hvilke skap du har?</p>
@@ -7,7 +9,7 @@
 <form method="post" >
     <fieldset>
         {% csrf_token %}
-        {{ form.as_p }}
+        {% bootstrap_form form %}
         <button type="submit" class="btn btn-primary">
             Send epost
         </button>
