@@ -5,3 +5,11 @@
 *.swp
 *.swo
 
+# log files
+*.log
+
+
+# Lokale instillinger
+/skapsystem/skapsystem/settings/local.py
+
+/venv
