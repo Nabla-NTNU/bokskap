@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 import django.utils.timezone as timezone
 
-from .models import Locker
+from locker.models import Locker
 
 
 class LockerModelTest(TestCase):
