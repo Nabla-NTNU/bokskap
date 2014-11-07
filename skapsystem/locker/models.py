@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
 from django.db import models
 from django.core.mail import send_mail
 from django.contrib.auth.models import User
+import django.utils.timezone as timezone
 
 
 class Locker(models.Model):
@@ -22,7 +22,7 @@ class Locker(models.Model):
 
     def reserve(self, User):
         self.owner = User
-        self.time_reserved = datetime.now()
+        self.time_reserved = timezone.now()
         self.save()
 
     def unreserve(self, lock_cut = False):
@@ -31,7 +31,7 @@ class Locker(models.Model):
             inactive.owner = self.owner
             inactive.lock_cut = lock_cut
             inactive.locker = self
-            inactive.time_unreserved = datetime.now()
+            inactive.time_unreserved = timezone.now()
             inactive.time_reserved = self.time_reserved
             inactive.save()
             self.time_reserved = None
