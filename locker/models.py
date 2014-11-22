@@ -12,10 +12,12 @@ class Locker(models.Model):
         ('CU2-021', 'CU2-021'),
         ('EU1-110', 'EU1-110')
     )
-    room = models.CharField(max_length = 10, choices = ROOMS, blank = False, editable = False, verbose_name="Rom")
-    locker_number = models.IntegerField(blank = False, editable = False, verbose_name="Skapnummer")
-    owner = models.ForeignKey(User, blank = True, null = True, verbose_name="Eier")
-    time_reserved = models.DateTimeField(blank = True, null = True)
+    room = models.CharField(max_length=10, choices=ROOMS, blank=False,
+                            editable=False, verbose_name="Rom")
+    locker_number = models.IntegerField(blank=False, editable=False,
+                                        verbose_name="Skapnummer")
+    owner = models.ForeignKey(User, blank=True, null=True, verbose_name="Eier")
+    time_reserved = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         unique_together = ('room', 'locker_number',)
@@ -25,7 +27,7 @@ class Locker(models.Model):
         self.time_reserved = timezone.now()
         self.save()
 
-    def unreserve(self, lock_cut = False):
+    def unreserve(self, lock_cut=False):
         if self.is_reserved():
             inactive = InactiveLockerReservation()
             inactive.owner = self.owner
@@ -42,16 +44,21 @@ class Locker(models.Model):
         return bool(self.owner)
 
     def __unicode__(self):
-        return u'(%s , %s) ' % (self.room , self.locker_number)
+        return u'(%s , %s) ' % (self.room, self.locker_number)
+
 
 class InactiveLockerReservation(models.Model):
-    time_reserved = models.DateTimeField(blank = False)
+    time_reserved = models.DateTimeField(blank=False)
 
- # Datoen enten brukeren avregistrerte skapet eller Nabla klippet opp låsen og fjernet innholdet.
-    time_unreserved = models.DateTimeField(blank = False) 
-    lock_cut = models.BooleanField(blank = False, default=False) # Indikerer om låsen på skapet ble klippet av Nabla
-    owner = models.ForeignKey(User, blank = False)
-    locker = models.ForeignKey(Locker, blank = False)
+    # Datoen enten brukeren avregistrerte skapet
+    # eller Nabla klippet opp låsen og fjernet innholdet.
+    time_unreserved = models.DateTimeField(blank=False)
+
+    # Indikerer om låsen på skapet ble klippet av Nabla
+    lock_cut = models.BooleanField(blank=False, default=False)
+
+    owner = models.ForeignKey(User, blank=False)
+    locker = models.ForeignKey(Locker, blank=False)
 
     def __unicode__(self):
         return u'(%s , %s) ' % (self.locker, self.owner)

@@ -35,7 +35,8 @@ def send_locker_reminder(user):
 def send_confirmation_email(user, locker, confirmation_token):
     """Sender bekfreftelsesepost til brukeren som prøvde å registrere seg."""
 
-    subject = 'Bekreftelse av reservasjon av skap %s i %s' % (locker.locker_number, locker.room)
+    subject = ('Bekreftelse av reservasjon av skap {} i {}'
+               .format(locker.locker_number, locker.room))
     confirmation_url = 'http://bokskap.nabla.no' + reverse('registration_confirmation', kwargs={'key': confirmation_token})
 
     c = Context({"confirmation_url": confirmation_url,
@@ -46,7 +47,9 @@ def send_confirmation_email(user, locker, confirmation_token):
 
 
 def create_confirmation_token(locker, post_data):
-    """Lager en bekreftelsesnøkkel og mellomlagrer skapregistreringsinformasjonen."""
+    """Lager en bekreftelsesnøkkel.
+
+    Mellomlagrer også skapregistreringsinformasjonen."""
 
     confirmation_token = hashlib.md5(str(random.random()).encode()).hexdigest()
     the_data = {'post_data': post_data,

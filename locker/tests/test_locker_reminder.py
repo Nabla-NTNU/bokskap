@@ -36,5 +36,3 @@ class LockerReminderTest(TestCase):
         for l in lockers_registered:
             self.assertIn(l.room, body)
             self.assertIn(str(l.locker_number), body)
-
-

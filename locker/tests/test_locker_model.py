@@ -21,9 +21,12 @@ class LockerModelTest(TestCase):
         l.reserve(self.user)
         after = timezone.now()
 
-        self.assertTrue(l.is_reserved(), "The locker is not registered when it should be.")
-        self.assertEqual(l.owner, self.user, "The locker is not registered to the correct user.")
-        self.assertTrue( before <= l.time_reserved <= after, "Check if registration time was set.")
+        self.assertTrue(l.is_reserved(),
+                        "The locker is not registered when it should be.")
+        self.assertEqual(l.owner, self.user,
+                         "The locker is not registered to the correct user.")
+        self.assertTrue(before <= l.time_reserved <= after,
+                        "Check if registration time was set.")
 
     def test_unreserve(self):
         l = self.lockers[0]

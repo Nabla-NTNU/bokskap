@@ -1,10 +1,9 @@
 from django.contrib import admin
-from locker.models import Locker
-from locker.models import InactiveLockerReservation
+from .models import Locker, InactiveLockerReservation
+
 
 class HasOwnerListFilter(admin.SimpleListFilter):
     title = 'status'
-
     parameter_name = 'hasowner'
 
     def lookups(self, request, model_admin):
@@ -44,9 +43,11 @@ class LockerAdmin(admin.ModelAdmin):
         for s in queryset.all():
             s.unreserve(lock_cut=False)
 
+
 class InactiveLockerReservationAdmin(admin.ModelAdmin):
     list_display = ('locker', 'owner', 'lock_cut')
-    fields = ('locker', 'owner', 'owner_name', 'owner_email', 'time_reserved', 'time_unreserved', 'lock_cut')
+    fields = ('locker', 'owner', 'owner_name', 'owner_email',
+              'time_reserved', 'time_unreserved', 'lock_cut')
     readonly_fields = ('locker', 'owner_name', 'owner_email')
 
     def owner_name(self, locker):
@@ -58,4 +59,3 @@ class InactiveLockerReservationAdmin(admin.ModelAdmin):
 
 admin.site.register(Locker, LockerAdmin)
 admin.site.register(InactiveLockerReservation, InactiveLockerReservationAdmin)
-
