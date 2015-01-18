@@ -1,3 +1,4 @@
+{% load static %}
 {% load bootstrap3 %}
 <!DOCTYPE html>
 <html lang="en">
@@ -29,8 +30,17 @@
                             <li><a href="{% url "list_lockers" room="EU1-110" %}">Rom EU1-110</a></li>
                         </ul>
                     </li>
-                    <li><a href="/static/bokskapreglement_NT.pdf"><span class="glyphicon glyphicon-info-sign"></span>Skapregler</a></li>
-                    <li><a href="/reminder">Glemt skapnummer?</a></li>
+                    <li>
+                        <a href="{% static "bokskapreglement_NT.pdf" %}">
+                            <span class="glyphicon glyphicon-info-sign"></span>
+                            Skapregler
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url "locker_reminder" %}">
+                            Glemt skapnummer?
+                        </a>
+                    </li>
                 </ul>
             </div>
         </nav>

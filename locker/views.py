@@ -6,9 +6,11 @@ from django.http import Http404
 from django.shortcuts import redirect
 from django.views.generic import ListView, FormView
 
-from .models import *
-from .forms import *
-from .utils import *
+from braces.views import MessageMixin
+
+from .models import Locker
+from .forms import LockerSearchForm, UsernameForm, LockerRegistrationForm
+from .utils import send_locker_reminder, create_confirmation_token, send_confirmation_email, save_locker_registration
 
 
 class IndexPage(FormView):
@@ -34,7 +36,7 @@ class LockerRoomView(ListView):
         return Locker.objects.filter(room=room).order_by('locker_number')
 
 
-class LockerReminder(FormView):
+class LockerReminder(MessageMixin, FormView):
     """View for å vise et skjema for påminnelse om skapnummer.
 
     Bruker UsernameForm for å skjekke om brukeren finnes
@@ -47,10 +49,7 @@ class LockerReminder(FormView):
         username = form.cleaned_data['username']
         user = User.objects.get(username=username)
         send_locker_reminder(user)
-        messages.add_message(
-            self.request,
-            messages.INFO,
-            u'En liste over dine skap har blitt sendt til %s' % user.email)
+        self.messages.info(u'En liste over dine skap har blitt sendt til %s' % user.email)
         return redirect("index_page")
 
 
@@ -60,7 +59,7 @@ def view_locker(request, room, locker_number):
     return the_view(request)
 
 
-class LockerRegistrationView(FormView):
+class LockerRegistrationView(MessageMixin, FormView):
     template_name = "locker/locker_registration.html"
     form_class = LockerRegistrationForm
 
@@ -69,22 +68,16 @@ class LockerRegistrationView(FormView):
         username = form.cleaned_data["username"]
         user, created = User.objects.get_or_create(username=username)
 
-        if created or not(user.email):
+        if created or not user.email:
             user.email = "%s@stud.ntnu.no" % user.username
             user.save()
         if user.locker_set.count() > 3:
-            messages.add_message(
-                self.request,
-                messages.ERROR,
-                u'Beklager, men brukeren %s har nådd maksgrensen på tre skap.'.format(user.username)
-                )
+            self.messages.error(
+                u'Beklager, men brukeren %s har nådd maksgrensen på tre skap.'.format(user.username))
         else:
             token = create_confirmation_token(locker, self.request.POST)
             send_confirmation_email(user, locker, token)
-            messages.add_message(
-                self.request,
-                messages.INFO,
-                u'En bekreftelsesepost er sendt til %s' % user.email)
+            self.messages.info(u'En bekreftelsesepost er sendt til %s' % user.email)
 
         return redirect("index_page")
 

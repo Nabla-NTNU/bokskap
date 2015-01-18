@@ -6,7 +6,7 @@ from django.core import mail
 from django.core.cache import cache
 
 from locker.models import Locker
-from locker.utils import *
+from locker.utils import create_confirmation_token, send_confirmation_email
 
 
 class CreateConfirmationTokenTest(TestCase):

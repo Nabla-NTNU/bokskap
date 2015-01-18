@@ -7,11 +7,10 @@ from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from django.template import Context
-from django.template.loader import get_template, render_to_string
+from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
-from .models import *
-from .forms import *
+from .models import Locker
 
 
 def send_template_email(template_folder, context, subject, emails):
@@ -37,7 +36,8 @@ def send_confirmation_email(user, locker, confirmation_token):
 
     subject = ('Bekreftelse av reservasjon av skap {} i {}'
                .format(locker.locker_number, locker.room))
-    confirmation_url = 'http://bokskap.nabla.no' + reverse('registration_confirmation', kwargs={'key': confirmation_token})
+    confirmation_url = 'http://bokskap.nabla.no' + reverse('registration_confirmation',
+                                                           kwargs={'key': confirmation_token})
 
     c = Context({"confirmation_url": confirmation_url,
                  "room": locker.room,

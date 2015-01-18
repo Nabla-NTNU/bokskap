@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import *
+from .models import Locker
 
 
 class UserForm(forms.Form):
@@ -41,18 +41,16 @@ class LockerRegistrationForm(UserForm, LockerSearchForm):
 
 
 class UsernameForm(forms.Form):
-    "Skjema for å skjekke om et brukernavn finnes."
+    """Skjema for å skjekke om et brukernavn finnes."""
     username = forms.CharField(max_length=30, required=True,
                                label='NTNU-brukernavn')
 
     def clean(self):
         cleaned_data = super(UsernameForm, self).clean()
+        username = cleaned_data['username']
         try:
-            username = cleaned_data['username']
-            u = User.objects.get(username=username)
+            User.objects.get(username=username)
         except User.DoesNotExist:
             raise forms.ValidationError(
                 'Brukeren {} finnes ikke i skapdatabasen.'.format(username))
-        except KeyError:
-            pass
         return cleaned_data

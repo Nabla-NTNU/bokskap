@@ -1,5 +1,6 @@
 from django.conf.urls import patterns, url
-from .views import *
+from .views import (IndexPage, LockerRoomView, view_locker,
+                    LockerRegistrationView, registration_confirmation, LockerReminder)
 
 
 urlpatterns = patterns('locker.views',

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.db import models
-from django.core.mail import send_mail
 from django.contrib.auth.models import User
 import django.utils.timezone as timezone
 
@@ -51,10 +50,10 @@ class InactiveLockerReservation(models.Model):
     time_reserved = models.DateTimeField(blank=False)
 
     # Datoen enten brukeren avregistrerte skapet
-    # eller Nabla klippet opp låsen og fjernet innholdet.
+    # eller Nabla klippet opp lÃ¥sen og fjernet innholdet.
     time_unreserved = models.DateTimeField(blank=False)
 
-    # Indikerer om låsen på skapet ble klippet av Nabla
+    # Indikerer om lÃ¥sen pÃ¥ skapet ble klippet av Nabla
     lock_cut = models.BooleanField(blank=False, default=False)
 
     owner = models.ForeignKey(User, blank=False)
