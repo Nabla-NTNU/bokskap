@@ -118,12 +118,11 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Uncomment the next line to enable the admin:
     'django.contrib.admin',
-    # Uncomment the next line to enable admin documentation:
     'django.contrib.admindocs',
     'bootstrap3',
     'locker',
+    'dbbackup', # http://django-dbbackup.readthedocs.org/
 )
 
 # A sample logging configuration. The only tangible logging
