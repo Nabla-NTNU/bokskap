@@ -16,7 +16,7 @@
 
 
 # Lokale instillinger
-/skapsystem/skapsystem/settings/local.py
+/skapsystem/settings/local.py
 
 /venv
 
