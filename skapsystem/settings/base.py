@@ -80,6 +80,8 @@ STATICFILES_FINDERS = (
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
+ADMIN_MEDIA_PREFIX = '/static/admin/'
+
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'kw+&u!11%q6kfqofukwx^()ka943b=4ee9cb@urn^w$$9(brcn'
 
@@ -121,7 +123,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'bootstrap3',
-    'grappelli'
+    'grappelli',
     'locker',
     'dbbackup', # http://django-dbbackup.readthedocs.org/
 )
