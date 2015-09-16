@@ -121,6 +121,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'bootstrap3',
+    'grappelli'
     'locker',
     'dbbackup', # http://django-dbbackup.readthedocs.org/
 )
