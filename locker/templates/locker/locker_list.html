@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
 
+{% include "warning_include.html" %}
+
 <ul id="room_list">
     {% for lroom in locker_rooms %}
     <li><a href="{% url 'list_lockers' room=lroom %}">lroom</a></li>
