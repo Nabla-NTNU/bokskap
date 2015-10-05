@@ -77,7 +77,8 @@ class LockerRegistrationView(MessageMixin, FormView):
         else:
             token = create_confirmation_token(locker, self.request.POST)
             send_confirmation_email(user, locker, token)
-            self.messages.info(u'En bekreftelsesepost er sendt til %s' % user.email)
+            self.messages.error(u'En bekreftelsesepost er sendt til %s. ' % user.email +  # Error for color in bootstrap
+                               u'Husk å bekrefte eposten som nå er sendt, hvis ikke så gjelder ikke reserveringen!')
 
         return redirect("index_page")
 
