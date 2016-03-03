@@ -1,0 +1,9 @@
+pip-tools
+django>=1.7,<1.8
+django-bootstrap3
+django-braces
+django-dbbackup
+django-grappelli
+PyMySQL
+gunicorn
+python3-memcached
