@@ -6,7 +6,6 @@ from django.core.mail import EmailMultiAlternatives
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
-from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
@@ -27,7 +26,7 @@ def send_template_email(template_folder, context, subject, emails):
 def send_locker_reminder(user):
     """Sender på epost med info om hvilke skap brukeren har."""
     subject = u'Liste over bokskap tilhørende %s' % (user.get_full_name())
-    c = Context({'lockers': user.locker_set.all()})
+    c = {'lockers': user.locker_set.all()}
     send_template_email('email/locker_reminder.html', c, subject, [user.email])
 
 
@@ -39,10 +38,11 @@ def send_confirmation_email(user, locker, confirmation_token):
     confirmation_url = 'http://bokskap.nabla.no' + reverse('registration_confirmation',
                                                            kwargs={'key': confirmation_token})
 
-    c = Context({"confirmation_url": confirmation_url,
-                 "room": locker.room,
-                 "locker_number": locker.locker_number
-                 })
+    c = {
+            "confirmation_url": confirmation_url,
+            "room": locker.room,
+            "locker_number": locker.locker_number
+        }
     send_template_email('email/confirmation_email.html', c, subject, [user.email])
 
 

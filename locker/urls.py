@@ -1,9 +1,9 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from .views import (IndexPage, LockerRoomView, view_locker,
                     LockerRegistrationView, registration_confirmation, LockerReminder)
 
 
-urlpatterns = patterns('locker.views',
+urlpatterns = [
     url(r'^$',
         IndexPage.as_view(), name="index_page"),
     url(r'^list/(?P<room>\w+-\d+)',
@@ -21,4 +21,4 @@ urlpatterns = patterns('locker.views',
     url(r'^reminder',
         LockerReminder.as_view(),
         name='locker_reminder'),
-)
+]

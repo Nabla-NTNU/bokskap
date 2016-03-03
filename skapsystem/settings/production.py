@@ -4,7 +4,6 @@ pymysql.install_as_MySQLdb()
 from .base import *
 
 DEBUG = False
-TEMPLATE_DEBUG = False
 
 ADMINS = (
     ('Øystein Hiåsen', 'hiasen@stud.ntnu.no'),
