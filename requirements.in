@@ -1,5 +1,5 @@
 pip-tools
-django>=1.7,<1.8
+django>=1.8,<1.9
 django-bootstrap3
 django-braces
 django-dbbackup
