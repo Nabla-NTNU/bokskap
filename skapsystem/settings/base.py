@@ -5,12 +5,6 @@ import os
 
 DEBUG = True
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'skapsystem.db',
-    }
-}
 
 ALLOWED_HOSTS = []
 TIME_ZONE = 'Europe/Oslo'

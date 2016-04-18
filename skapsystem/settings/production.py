@@ -4,6 +4,7 @@ pymysql.install_as_MySQLdb()
 from .base import *
 
 DEBUG = False
+ALLOWED_HOSTS = ['bokskap.nabla.no']
 
 ADMINS = (
     ('Øystein Hiåsen', 'hiasen@stud.ntnu.no'),
