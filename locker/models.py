@@ -42,8 +42,8 @@ class Locker(models.Model):
     def is_reserved(self):
         return bool(self.owner)
 
-    def __unicode__(self):
-        return u'(%s , %s) ' % (self.room, self.locker_number)
+    def __str__(self):
+        return "({0.room}, {0.locker_number}) ".format(self)
 
 
 class InactiveLockerReservation(models.Model):
@@ -59,5 +59,5 @@ class InactiveLockerReservation(models.Model):
     owner = models.ForeignKey(User, blank=False)
     locker = models.ForeignKey(Locker, blank=False)
 
-    def __unicode__(self):
-        return u'(%s , %s) ' % (self.locker, self.owner)
+    def __str__(self):
+        return "({0.locker}, {0.owner}) ".format(self)

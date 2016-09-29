@@ -34,3 +34,9 @@ class LockerModelTest(TestCase):
 
         l.unreserve()
         self.assertFalse(l.is_reserved(), "Check if is registered")
+
+    def test_str(self):
+        for l in self.lockers:
+            s = str(l)
+            self.assertIn(l.room, s)
+            self.assertIn(str(l.locker_number), s)
