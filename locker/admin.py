@@ -19,8 +19,9 @@ class HasOwnerListFilter(admin.SimpleListFilter):
             return queryset.filter(owner__isnull=True)
 
 
+@admin.register(Locker)
 class LockerAdmin(admin.ModelAdmin):
-    list_display = ('__unicode__', 'owner')
+    list_display = ('__str__', 'owner')
     list_filter = ('room', HasOwnerListFilter,)
     ordering = ('room', 'locker_number',)
     actions = ('unreserve_locker', 'cut_locker',)
@@ -44,6 +45,7 @@ class LockerAdmin(admin.ModelAdmin):
             s.unreserve(lock_cut=False)
 
 
+@admin.register(InactiveLockerReservation)
 class InactiveLockerReservationAdmin(admin.ModelAdmin):
     list_display = ('locker', 'owner', 'lock_cut')
     fields = ('locker', 'owner', 'owner_name', 'owner_email',
@@ -55,7 +57,3 @@ class InactiveLockerReservationAdmin(admin.ModelAdmin):
 
     def owner_email(self, locker):
         return locker.owner.email
-
-
-admin.site.register(Locker, LockerAdmin)
-admin.site.register(InactiveLockerReservation, InactiveLockerReservationAdmin)
