@@ -1,6 +1,7 @@
 from django.conf.urls import url
 from .views import (IndexPage, LockerRoomView, view_locker,
-                    LockerRegistrationView, registration_confirmation, LockerReminder)
+                    LockerRegistrationView, registration_confirmation, LockerReminder,
+                    UserList)
 
 
 urlpatterns = [
@@ -21,4 +22,7 @@ urlpatterns = [
     url(r'^reminder',
         LockerReminder.as_view(),
         name='locker_reminder'),
+    url(r'^userlist$',
+        UserList.as_view(),
+        name='user_list'),
 ]

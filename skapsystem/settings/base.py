@@ -93,3 +93,4 @@ LOGGING = {
 }
 
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+LOGIN_URL = "/admin/login"

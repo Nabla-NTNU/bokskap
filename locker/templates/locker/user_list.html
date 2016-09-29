@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Navn</th>
+                <th>Skap</th>
+            </tr>
+        </thead>
+        {% for user in user_list %}
+            <tr>
+                <td>{{ user.get_full_name }}</td>
+                <td>
+                    <ul>
+                        {% for locker in  user.locker_set.all %}
+                            <li>{{ locker }}, {{ locker.time_reserved }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.contrib.auth.models import User
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import redirect
@@ -96,3 +97,12 @@ def registration_confirmation(request, key):
             locker.room,
             user.username))
     return redirect('/list/'+locker.room)
+
+
+class UserList(PermissionRequiredMixin, ListView):
+    """
+    View to list all user with with list of all lockers that user uses.
+    """
+    model = User
+    template_name = "locker/user_list.html"
+    permission_required = "locker.add"
