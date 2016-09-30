@@ -8,6 +8,21 @@ class UserForm(forms.Form):
     first_name = forms.CharField(max_length=30, required=True, label='Fornavn')
     last_name = forms.CharField(max_length=30, required=True, label='Etternavn')
 
+    def clean_username(self):
+        """
+        Make sure the user supplies a valid NTNU-username and not an email-address.
+
+        There has been a lot users writing their ntnu-email-address instead of their username.
+        """
+        username = self.cleaned_data['username']
+        if "@" in username:
+            raise forms.ValidationError(
+                "Dette ser ut som en epostadresse, men du ble bedt om NTNU-Brukernavn!")
+        elif not username.isalnum():
+            raise forms.ValidationError(
+                "Gyldige NTNU-brukernavn består kun av bokstaver og tall.")
+        return username
+
 
 class LockerSearchForm(forms.Form):
     """Skjema for å velge et skap."""
