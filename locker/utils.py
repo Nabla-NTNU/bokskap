@@ -1,5 +1,5 @@
 import random
-import hashlib
+import string
 
 from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
@@ -51,7 +51,7 @@ def create_confirmation_token(locker, post_data):
 
     Mellomlagrer også skapregistreringsinformasjonen."""
 
-    confirmation_token = hashlib.md5(str(random.random()).encode()).hexdigest()
+    confirmation_token = random_string()
     the_data = {'post_data': post_data,
                 'room': locker.room,
                 'locker_number': locker.locker_number,
@@ -59,6 +59,10 @@ def create_confirmation_token(locker, post_data):
 
     cache.set(confirmation_token, the_data, None)
     return confirmation_token
+
+
+def random_string(length=20, alphabet=string.ascii_letters+string.digits):
+    return "".join(random.choice(alphabet) for _ in range(length))
 
 
 def save_locker_registration(token):
