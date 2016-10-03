@@ -1,11 +1,8 @@
-import random
 import string
 
-from django.contrib.auth.models import User
+import random
 from django.core.mail import EmailMultiAlternatives
-from django.core.cache import cache
 from django.core.urlresolvers import reverse
-from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
@@ -58,47 +55,8 @@ def get_confirmation_url(token, request=None):
     return 'http://bokskap.nabla.no' + relative_url
 
 
-def create_confirmation_token(locker, post_data):
-    """Lager en bekreftelsesnøkkel ved hjelp av gammel metode.
-
-    Mellomlagrer også skapregistreringsinformasjonen.
-    TODO: Fjern denne når det nye systemet har vært i bruk en stund.
-    """
-
-    confirmation_token = random_string()
-    the_data = {'post_data': post_data,
-                'room': locker.room,
-                'locker_number': locker.locker_number,
-                }
-
-    cache.set(confirmation_token, the_data, None)
-    return confirmation_token
-
-
 def random_string(length=20, alphabet=string.ascii_letters+string.digits):
     return "".join(random.choice(alphabet) for _ in range(length))
-
-
-def save_old_registration(token):
-    """Tar i mot gammel bekreftelsesnøkkel fra gammel metode og lagrer skapregistreringen."""
-    the_data = cache.get(token)
-    if the_data is None:
-        raise KeyError
-
-    post_data = the_data['post_data']
-    room = the_data['room']
-    locker_number = the_data['locker_number']
-
-    from .models import Locker
-
-    locker = get_object_or_404(Locker, room=room, locker_number=locker_number)
-
-    user = User.objects.get(username=post_data['username'])
-    user.first_name = post_data['first_name']
-    user.last_name = post_data['last_name']
-    user.save()
-    locker.reserve(user)
-    return user, locker
 
 
 def stud_email_from_username(username):

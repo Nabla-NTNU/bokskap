@@ -11,8 +11,8 @@ from braces.views import MessageMixin
 
 from .models import Locker, RegistrationRequest
 from .forms import LockerSearchForm, UsernameForm, LockerRegistrationForm
-from .utils import (send_locker_reminder, create_confirmation_token, send_confirmation_email,
-                    save_old_registration, stud_email_from_username)
+from .utils import send_locker_reminder, stud_email_from_username
+from .old_confirmation_system import save_old_registration
 
 
 class IndexPage(FormView):
@@ -95,6 +95,7 @@ def registration_confirmation(request, key):
         import logging
         logger = logging.getLogger(__name__)
         # Try the old way
+        # TODO: remove some day
         try:
             user, locker = save_old_registration(key)
             logger.warn("Found old key in memcached: {}".format(key))
