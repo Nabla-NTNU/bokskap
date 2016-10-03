@@ -4,7 +4,8 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 import django.utils.timezone as timezone
 
-from .fixture_factories import LockerFactory
+from .fixture_factories import LockerFactory, fake_locker_registration_post_request
+from locker.models import Locker
 
 
 class LockerModelTest(TestCase):
@@ -40,3 +41,10 @@ class LockerModelTest(TestCase):
             s = str(l)
             self.assertIn(l.room, s)
             self.assertIn(str(l.locker_number), s)
+
+    def test_get_locker_from_post_data(self):
+        data = fake_locker_registration_post_request()
+        locker = Locker.objects.get_from_post_data(data)
+        self.assertIsInstance(locker, Locker)
+        self.assertEqual(locker.room, data["room"])
+        self.assertEqual(locker.locker_number, data["locker_number"])

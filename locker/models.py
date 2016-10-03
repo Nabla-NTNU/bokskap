@@ -3,6 +3,13 @@ from django.db import models
 from django.contrib.auth.models import User
 import django.utils.timezone as timezone
 
+from .utils import random_string, stud_email_from_username, send_confirmation_email
+
+
+class LockerManager(models.Manager):
+    def get_from_post_data(self, data):
+        return self.get(room=data["room"], locker_number=data["locker_number"])
+
 
 class Locker(models.Model):
 
@@ -17,6 +24,8 @@ class Locker(models.Model):
                                         verbose_name="Skapnummer")
     owner = models.ForeignKey(User, blank=True, null=True, verbose_name="Eier")
     time_reserved = models.DateTimeField(blank=True, null=True)
+
+    objects = LockerManager()
 
     class Meta:
         unique_together = ('room', 'locker_number',)
@@ -61,3 +70,39 @@ class InactiveLockerReservation(models.Model):
 
     def __str__(self):
         return "({0.locker}, {0.owner}) ".format(self)
+
+
+class RegistrationRequest(models.Model):
+    confirmation_token = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    creation_time = models.DateTimeField(auto_now_add=True)
+
+    locker = models.ForeignKey(Locker, blank=False)
+    username = models.CharField("Brukernavn", max_length=30, blank=False)
+    first_name = models.CharField("Fornavn", max_length=30, blank=True)
+    last_name = models.CharField("Etternavn", max_length=30, blank=True)
+
+    @classmethod
+    def from_post_data(cls, data):
+        regreq = RegistrationRequest()
+        regreq.locker = Locker.objects.get_from_post_data(data)
+        regreq.first_name = data['first_name']
+        regreq.last_name = data['last_name']
+        regreq.username = data['username']
+        regreq.save()
+        return regreq
+
+    def save(self, **kwargs):
+        if self.confirmation_token is None:
+            self.confirmation_token = random_string()
+        super().save(**kwargs)
+
+    def get_email(self):
+        return stud_email_from_username(self.username)
+
+    def send_confirmation_email(self):
+        email = self.get_email()
+        send_confirmation_email(email, self.locker, self.confirmation_token)
+
+    def confirm(self):
+        user, created = User.objects.get_or_create(username=self.username)
+        self.locker.reserve(user)

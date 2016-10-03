@@ -9,8 +9,6 @@ from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
-from .models import Locker
-
 
 def send_template_email(template_folder, context, subject, emails):
     from_email = 'ikke_svar@nabla.ntnu.no'
@@ -30,7 +28,7 @@ def send_locker_reminder(user):
     send_template_email('email/locker_reminder.html', c, subject, [user.email])
 
 
-def send_confirmation_email(user, locker, confirmation_token, request=None):
+def send_confirmation_email(email, locker, confirmation_token, request=None):
     """Sender bekfreftelsesepost til brukeren som prøvde å registrere seg."""
 
     subject = ('Bekreftelse av reservasjon av skap {} i {}'
@@ -42,7 +40,7 @@ def send_confirmation_email(user, locker, confirmation_token, request=None):
             "room": locker.room,
             "locker_number": locker.locker_number
         }
-    send_template_email('email/confirmation_email.html', c, subject, [user.email])
+    send_template_email('email/confirmation_email.html', c, subject, [email])
 
 
 def get_confirmation_url(token, request=None):
@@ -89,6 +87,8 @@ def save_locker_registration(token):
     room = the_data['room']
     locker_number = the_data['locker_number']
 
+    from .models import Locker
+
     locker = get_object_or_404(Locker, room=room, locker_number=locker_number)
 
     user = User.objects.get(username=post_data['username'])
@@ -97,3 +97,7 @@ def save_locker_registration(token):
     user.save()
     locker.reserve(user)
     return user, locker
+
+
+def stud_email_from_username(username):
+    return "{}@stud.ntnu.no".format(username)

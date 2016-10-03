@@ -33,7 +33,7 @@ class CreateConfirmationTokenTest(TestCase):
         token = "thetoken"
         u = self.user
         l = self.locker
-        send_confirmation_email(u, self.locker, token)
+        send_confirmation_email(u.email, self.locker, token)
 
         the_mail = mail.outbox[0]
         self.assertIn(u.email, the_mail.to)
