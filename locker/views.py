@@ -9,9 +9,10 @@ from django.views.generic import ListView, FormView
 
 from braces.views import MessageMixin
 
-from .models import Locker
+from .models import Locker, RegistrationRequest
 from .forms import LockerSearchForm, UsernameForm, LockerRegistrationForm
-from .utils import send_locker_reminder, create_confirmation_token, send_confirmation_email, save_locker_registration
+from .utils import send_locker_reminder, stud_email_from_username
+from .old_confirmation_system import save_old_registration
 
 
 class IndexPage(FormView):
@@ -65,30 +66,42 @@ class LockerRegistrationView(MessageMixin, FormView):
     form_class = LockerRegistrationForm
 
     def form_valid(self, form):
-        locker = form.locker
         username = form.cleaned_data["username"]
         user, created = User.objects.get_or_create(username=username)
 
         if created or not user.email:
-            user.email = "%s@stud.ntnu.no" % user.username
+            user.email = stud_email_from_username(user.username)
             user.save()
         if user.locker_set.count() > 3:
             self.messages.error(
                 u'Beklager, men brukeren %s har nådd maksgrensen på tre skap.'.format(user.username))
         else:
-            token = create_confirmation_token(locker, self.request.POST)
-            send_confirmation_email(user, locker, token)
-            self.messages.error(u'En bekreftelsesepost er sendt til %s. ' % user.email +  # Error for color in bootstrap
-                               u'Husk å bekrefte eposten som nå er sendt, hvis ikke så gjelder ikke reserveringen!')
+            reg = RegistrationRequest.from_post_data(form.cleaned_data)
+            reg.send_confirmation_email()
+            self.messages.error(u'En bekreftelsesepost er sendt til %s. ' % reg.get_email() +  # Error for color in bootstrap
+                                u'Husk å bekrefte eposten som nå er sendt, hvis ikke så gjelder ikke reserveringen!')
 
         return redirect("index_page")
 
 
 def registration_confirmation(request, key):
+    # Try first the new way of confirming requests
     try:
-        user, locker = save_locker_registration(key)
-    except KeyError:
-        raise Http404
+        regreq = RegistrationRequest.objects.get(confirmation_token=key)
+        regreq.confirm()
+        user, _ = User.objects.get_or_create(username=regreq.username)
+        locker = regreq.locker
+    except RegistrationRequest.DoesNotExist:
+        import logging
+        logger = logging.getLogger(__name__)
+        # Try the old way
+        # TODO: remove some day
+        try:
+            user, locker = save_old_registration(key)
+            logger.warn("Found old key in memcached: {}".format(key))
+        except KeyError:
+            logger.warn("Missed key: {}".format(key))
+            raise Http404
     messages.add_message(
         request,
         messages.INFO,

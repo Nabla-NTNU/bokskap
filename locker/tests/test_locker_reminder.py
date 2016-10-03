@@ -4,15 +4,15 @@ from django.test import TestCase
 from django.core import mail
 from django.contrib.auth.models import User
 
-from locker.models import Locker
 from locker.utils import send_locker_reminder
+from .fixture_factories import LockerFactory
 
 
 class LockerReminderTest(TestCase):
 
     def setUp(self):
         self.user = User.objects.create(username="abc")
-        self.lockers = [Locker.objects.create(locker_number=i, room="CU1-111") for i in range(10)]
+        self.lockers = LockerFactory.create_batch(10)
 
     def test_send_locker_reminder(self):
         # Hent brukeren
