@@ -5,13 +5,13 @@ from django.contrib.auth.models import User
 from django.core import mail
 from django.core.cache import cache
 
-from locker.models import Locker
 from locker.utils import create_confirmation_token, send_confirmation_email
+from .fixture_factories import LockerFactory
 
 
 class CreateConfirmationTokenTest(TestCase):
     def setUp(self):
-        self.locker = Locker.objects.create(room="hei", locker_number=1)
+        self.locker = LockerFactory.create()
         self.user = User.objects.create(username="username")
 
     def test_create_confirmation_token(self):

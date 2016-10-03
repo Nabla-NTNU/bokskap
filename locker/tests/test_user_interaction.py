@@ -4,12 +4,12 @@ from django.core import mail
 
 import random
 import re
-import faker
 
-from .fixture_factories import LockerFactory
+from .fixture_factories import LockerFactory, fake_user_dict
 from locker.models import Locker
 
-fake = faker.Faker("no_NO")
+# Regex taken uncritically from:
+# http://stackoverflow.com/questions/6883049/regex-to-find-urls-in-string-in-python#6883094
 url_regex_pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
 
 
@@ -29,20 +29,12 @@ class TestTypicalUserInteraction(TestCase):
             "locker_number": locker.locker_number
         }
 
-    def get_user_dict(self):
-        return {
-            "username": 'username',
-            "first_name": fake.first_name(),
-            "last_name": fake.last_name(),
-        }
-
     def test_single_locker_registration(self):
         # An NTNU-student wants to register a locker in realfagbygget
         data = self.get_locker_dict(self.get_random_locker())
         registration_url = reverse("register_locker", kwargs=data)
 
-        user_dict = self.get_user_dict()
-        data.update(user_dict)
+        data.update(fake_user_dict())
 
         # He/she posts the information.
         self.client.post(registration_url, data=data)
