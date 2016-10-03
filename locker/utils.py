@@ -30,13 +30,12 @@ def send_locker_reminder(user):
     send_template_email('email/locker_reminder.html', c, subject, [user.email])
 
 
-def send_confirmation_email(user, locker, confirmation_token):
+def send_confirmation_email(user, locker, confirmation_token, request=None):
     """Sender bekfreftelsesepost til brukeren som prøvde å registrere seg."""
 
     subject = ('Bekreftelse av reservasjon av skap {} i {}'
                .format(locker.locker_number, locker.room))
-    confirmation_url = 'http://bokskap.nabla.no' + reverse('registration_confirmation',
-                                                           kwargs={'key': confirmation_token})
+    confirmation_url = get_confirmation_url(confirmation_token, request=request)
 
     c = {
             "confirmation_url": confirmation_url,
@@ -44,6 +43,21 @@ def send_confirmation_email(user, locker, confirmation_token):
             "locker_number": locker.locker_number
         }
     send_template_email('email/confirmation_email.html', c, subject, [user.email])
+
+
+def get_confirmation_url(token, request=None):
+    """
+    Return
+
+    :param token: The confirmation token to be used in the url
+    :param request: Optional HttpRequest-object to get the currently used absolute_uri.
+                    Used mostly for testing-purposes when the absolute url is not the production url.
+    :return: The abosulte url for confirming the locker_registration.
+    """
+    relative_url = reverse('registration_confirmation', kwargs={'key': token})
+    if request is not None:
+        return request.build_absolute_uri(relative_url)
+    return 'http://bokskap.nabla.no' + relative_url
 
 
 def create_confirmation_token(locker, post_data):

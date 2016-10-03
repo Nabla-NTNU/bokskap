@@ -7,3 +7,5 @@ django-grappelli
 PyMySQL
 gunicorn
 python3-memcached
+factory_boy
+faker

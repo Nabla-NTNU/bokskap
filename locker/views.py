@@ -77,7 +77,7 @@ class LockerRegistrationView(MessageMixin, FormView):
                 u'Beklager, men brukeren %s har nådd maksgrensen på tre skap.'.format(user.username))
         else:
             token = create_confirmation_token(locker, self.request.POST)
-            send_confirmation_email(user, locker, token)
+            send_confirmation_email(user, locker, token, request=self.request)
             self.messages.error(u'En bekreftelsesepost er sendt til %s. ' % user.email +  # Error for color in bootstrap
                                u'Husk å bekrefte eposten som nå er sendt, hvis ikke så gjelder ikke reserveringen!')
 
