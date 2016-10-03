@@ -59,9 +59,11 @@ def get_confirmation_url(token, request=None):
 
 
 def create_confirmation_token(locker, post_data):
-    """Lager en bekreftelsesnøkkel.
+    """Lager en bekreftelsesnøkkel ved hjelp av gammel metode.
 
-    Mellomlagrer også skapregistreringsinformasjonen."""
+    Mellomlagrer også skapregistreringsinformasjonen.
+    TODO: Fjern denne når det nye systemet har vært i bruk en stund.
+    """
 
     confirmation_token = random_string()
     the_data = {'post_data': post_data,
@@ -77,8 +79,8 @@ def random_string(length=20, alphabet=string.ascii_letters+string.digits):
     return "".join(random.choice(alphabet) for _ in range(length))
 
 
-def save_locker_registration(token):
-    """Tar i mot bekreftelsesnøkkel og lagrer skapregistreringen."""
+def save_old_registration(token):
+    """Tar i mot gammel bekreftelsesnøkkel fra gammel metode og lagrer skapregistreringen."""
     the_data = cache.get(token)
     if the_data is None:
         raise KeyError
