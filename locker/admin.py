@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Locker, InactiveLockerReservation
+from .models import Locker, InactiveLockerReservation, RegistrationRequest
 
 
 class HasOwnerListFilter(admin.SimpleListFilter):
@@ -21,7 +21,7 @@ class HasOwnerListFilter(admin.SimpleListFilter):
 
 @admin.register(Locker)
 class LockerAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'owner')
+    list_display = ('locker_number', 'room', 'owner')
     list_filter = ('room', HasOwnerListFilter,)
     ordering = ('room', 'locker_number',)
     actions = ('unreserve_locker', 'cut_locker',)
@@ -57,3 +57,13 @@ class InactiveLockerReservationAdmin(admin.ModelAdmin):
 
     def owner_email(self, locker):
         return locker.owner.email
+
+
+@admin.register(RegistrationRequest)
+class RegistrationRequestAdmin(admin.ModelAdmin):
+    actions = ("confirm",)
+    list_display = ("username", "locker", "creation_time")
+
+    def confirm(self, request, queryset):
+        for reg_request in queryset:
+            reg_request.confirm()

@@ -33,6 +33,8 @@ class Locker(models.Model):
 
     class Meta:
         unique_together = ('room', 'locker_number',)
+        verbose_name = "Skap"
+        verbose_name_plural = "Skap"
 
     def reserve(self, user):
         if self.is_reserved():
@@ -75,6 +77,10 @@ class InactiveLockerReservation(models.Model):
     owner = models.ForeignKey(User, blank=False)
     locker = models.ForeignKey(Locker, blank=False)
 
+    class Meta:
+        verbose_name = "Inaktiv registrering"
+        verbose_name_plural = "Inaktive registreringer"
+
     def __str__(self):
         return "({0.locker}, {0.owner}) ".format(self)
 
@@ -99,6 +105,13 @@ class RegistrationRequest(models.Model):
     last_name = models.CharField("Etternavn", max_length=30, blank=True)
 
     objects = RegistrationRequestManager()
+
+    class Meta:
+        verbose_name = "Skapforespørsel"
+        verbose_name_plural = "Skapforespørsler"
+
+    def __str__(self):
+        return "{0.username} forespør {0.locker}".format(self)
 
     def save(self, **kwargs):
         if self.confirmation_token is None:

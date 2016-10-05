@@ -50,3 +50,8 @@ class Test2(TestCase):
         locker = self.reg.locker
         self.assertTrue(locker.is_reserved())
         self.assertTrue(locker.owner.username == self.reg.username)
+
+    def test_string_representation(self):
+        s = str(self.reg)
+        self.assertIn(self.reg.username, s)
+        self.assertIn(str(self.reg.locker), s)
