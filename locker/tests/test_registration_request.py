@@ -49,7 +49,12 @@ class Test2(TestCase):
         self.reg.confirm()
         locker = self.reg.locker
         self.assertTrue(locker.is_reserved())
-        self.assertTrue(locker.owner.username == self.reg.username)
+        self.assertTrue(locker.owner.username, self.reg.username)
+
+        # Request object should have been deleted after confirmation not exist anymore
+        with self.assertRaises(RegistrationRequest.DoesNotExist):
+            RegistrationRequest.objects.get(id=self.reg.id)
+
 
     def test_string_representation(self):
         s = str(self.reg)

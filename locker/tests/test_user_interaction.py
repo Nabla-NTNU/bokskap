@@ -62,3 +62,7 @@ class TestTypicalUserInteraction(TestCase):
         # the locker should be registered.
         locker.refresh_from_db()
         self.assertTrue(locker.is_reserved())
+
+        # If the user tries to confirm again she gets a HTTP 404
+        result = self.client.get(urls_found[0])
+        self.assertEqual(result.status_code, 404)

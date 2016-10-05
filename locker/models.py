@@ -128,3 +128,4 @@ class RegistrationRequest(models.Model):
     def confirm(self):
         user, created = User.objects.get_or_create(username=self.username)
         self.locker.reserve(user)
+        self.delete()
