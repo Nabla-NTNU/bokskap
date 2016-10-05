@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 import django.utils.timezone as timezone
 
 from .fixture_factories import LockerFactory, fake_locker_registration_post_request
-from locker.models import Locker
+from locker.models import Locker, LockerException
 
 
 class LockerModelTest(TestCase):
@@ -48,3 +48,11 @@ class LockerModelTest(TestCase):
         self.assertIsInstance(locker, Locker)
         self.assertEqual(locker.room, data["room"])
         self.assertEqual(locker.locker_number, data["locker_number"])
+
+    def test_register_twice(self):
+        user2 = User.objects.create(username="lala")
+        l = self.lockers[0]
+        l.reserve(self.user)
+        with self.assertRaises(LockerException):
+            l.reserve(user2)
+        self.assertEqual(l.owner, self.user)

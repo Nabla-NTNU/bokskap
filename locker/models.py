@@ -11,6 +11,10 @@ class LockerManager(models.Manager):
         return self.get(room=data["room"], locker_number=data["locker_number"])
 
 
+class LockerException(Exception):
+    pass
+
+
 class Locker(models.Model):
 
     ROOMS = (
@@ -30,8 +34,11 @@ class Locker(models.Model):
     class Meta:
         unique_together = ('room', 'locker_number',)
 
-    def reserve(self, User):
-        self.owner = User
+    def reserve(self, user):
+        if self.is_reserved():
+            raise LockerException(("{0} is already registered to {0.owner}"
+                                   " and can't be registered to {1}").format(self, user))
+        self.owner = user
         self.time_reserved = timezone.now()
         self.save()
 
