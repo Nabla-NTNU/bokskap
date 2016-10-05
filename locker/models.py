@@ -90,13 +90,12 @@ class RegistrationRequest(models.Model):
 
     @classmethod
     def from_post_data(cls, data):
-        regreq = RegistrationRequest()
-        regreq.locker = Locker.objects.get_from_post_data(data)
-        regreq.first_name = data['first_name']
-        regreq.last_name = data['last_name']
-        regreq.username = data['username']
-        regreq.save()
-        return regreq
+        return RegistrationRequest.objects.create(
+            locker=Locker.objects.get_from_post_data(data),
+            username=data['username'],
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+        )
 
     def save(self, **kwargs):
         if self.confirmation_token is None:
