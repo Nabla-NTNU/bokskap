@@ -1,4 +1,5 @@
 from django.conf.urls import url
+from django.views.generic import TemplateView
 from .views import (IndexPage, LockerRoomView, view_locker,
                     LockerRegistrationView, registration_confirmation, LockerReminder,
                     UserList)
@@ -7,6 +8,9 @@ from .views import (IndexPage, LockerRoomView, view_locker,
 urlpatterns = [
     url(r'^$',
         IndexPage.as_view(), name="index_page"),
+    url(r'^skapregler$',
+        TemplateView.as_view(template_name="locker/locker_rules.html"),
+        name="locker_rules"),
     url(r'^list/(?P<room>\w+-\d+)',
         LockerRoomView.as_view(),
         name="list_lockers"),

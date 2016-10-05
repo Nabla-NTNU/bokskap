@@ -10,6 +10,11 @@
     <title>
         {% block title %}Registrering av skap i Realfagbygget{% endblock title %}
     </title>
+    <style>
+    li {
+        margin: 1em 0;
+    }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -31,7 +36,7 @@
                         </ul>
                     </li>
                     <li>
-                        <a href="{% static "bokskapreglement_NT.pdf" %}">
+                        <a href="{% url "locker_rules" %}">
                             <span class="glyphicon glyphicon-info-sign"></span>
                             Skapregler
                         </a>
