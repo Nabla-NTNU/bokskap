@@ -109,7 +109,7 @@ def registration_confirmation(request, key):
             locker.locker_number,
             locker.room,
             user.username))
-    return redirect('/list/'+locker.room)
+    return redirect('list_lockers', room=locker.room)
 
 
 class UserList(PermissionRequiredMixin, ListView):
