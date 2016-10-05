@@ -12,7 +12,7 @@ class TestRegistrationRequest(TestCase):
 
     def test_create(self):
         post_data = fake_locker_registration_post_request()
-        request = RegistrationRequest.from_post_data(post_data)
+        request = RegistrationRequest.objects.create_from_data(post_data)
 
         self.assertIsInstance(request, RegistrationRequest)
 

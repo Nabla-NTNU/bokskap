@@ -79,6 +79,16 @@ class InactiveLockerReservation(models.Model):
         return "({0.locker}, {0.owner}) ".format(self)
 
 
+class RegistrationRequestManager(models.Manager):
+    def create_from_data(self, data):
+        return self.create(
+            locker=Locker.objects.get_from_post_data(data),
+            username=data['username'],
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+        )
+
+
 class RegistrationRequest(models.Model):
     confirmation_token = models.CharField(max_length=20, unique=True, blank=True, null=True)
     creation_time = models.DateTimeField(auto_now_add=True)
@@ -88,14 +98,7 @@ class RegistrationRequest(models.Model):
     first_name = models.CharField("Fornavn", max_length=30, blank=True)
     last_name = models.CharField("Etternavn", max_length=30, blank=True)
 
-    @classmethod
-    def from_post_data(cls, data):
-        return RegistrationRequest.objects.create(
-            locker=Locker.objects.get_from_post_data(data),
-            username=data['username'],
-            first_name=data['first_name'],
-            last_name=data['last_name'],
-        )
+    objects = RegistrationRequestManager()
 
     def save(self, **kwargs):
         if self.confirmation_token is None:

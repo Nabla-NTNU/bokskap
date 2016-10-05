@@ -76,7 +76,7 @@ class LockerRegistrationView(MessageMixin, FormView):
             self.messages.error(
                 u'Beklager, men brukeren %s har nådd maksgrensen på tre skap.'.format(user.username))
         else:
-            reg = RegistrationRequest.from_post_data(form.cleaned_data)
+            reg = RegistrationRequest.objects.create_from_data(form.cleaned_data)
             reg.send_confirmation_email()
             self.messages.error(u'En bekreftelsesepost er sendt til %s. ' % reg.get_email() +  # Error for color in bootstrap
                                 u'Husk å bekrefte eposten som nå er sendt, hvis ikke så gjelder ikke reserveringen!')
