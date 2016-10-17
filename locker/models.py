@@ -37,12 +37,13 @@ class Locker(models.Model):
         verbose_name_plural = "Skap"
 
     def reserve(self, user):
-        if self.is_reserved():
+        if not self.is_reserved():
+            self.owner = user
+            self.time_reserved = timezone.now()
+            self.save()
+        if self.owner != user:
             raise LockerException(("{0} is already registered to {0.owner}"
                                    " and can't be registered to {1}").format(self, user))
-        self.owner = user
-        self.time_reserved = timezone.now()
-        self.save()
 
     def unreserve(self, lock_cut=False):
         if self.is_reserved():
@@ -104,6 +105,9 @@ class RegistrationRequest(models.Model):
     first_name = models.CharField("Fornavn", max_length=30, blank=True)
     last_name = models.CharField("Etternavn", max_length=30, blank=True)
 
+    confirmation_time = models.DateTimeField(
+            verbose_name="Tidspunktet forspørselen ble bekreftet", null=True)
+
     objects = RegistrationRequestManager()
 
     class Meta:
@@ -123,9 +127,13 @@ class RegistrationRequest(models.Model):
 
     def send_confirmation_email(self, request=None):
         email = self.get_email()
-        send_confirmation_email(email, self.locker, self.confirmation_token, request=None)
+        send_confirmation_email(email, self.locker, self.confirmation_token, request=request)
 
     def confirm(self):
         user, created = User.objects.get_or_create(username=self.username)
         self.locker.reserve(user)
-        self.delete()
+        self.confirmation_time = timezone.now()
+        self.save()
+
+    def has_been_confirmed(self):
+        return self.confirmation_time is not None

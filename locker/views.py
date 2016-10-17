@@ -3,7 +3,7 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.shortcuts import redirect, get_object_or_404
-from django.views.generic import ListView, FormView, View
+from django.views.generic import ListView, FormView, TemplateView
 
 from braces.views import MessageMixin
 
@@ -51,7 +51,7 @@ class LockerReminder(MessageMixin, FormView):
         username = form.cleaned_data['username']
         user = User.objects.get(username=username)
         send_locker_reminder(user)
-        self.messages.info(u'En liste over dine skap har blitt sendt til %s' % user.email)
+        self.messages.info('En liste over dine skap har blitt sendt til {}'.format(user.email))
         return redirect("index_page")
 
 
@@ -72,29 +72,41 @@ class LockerRegistrationView(MessageMixin, FormView):
         if created or not user.email:
             user.email = stud_email_from_username(user.username)
             user.save()
-        if user.locker_set.count() > 3:
+        if user.locker_set.count() >= 3:
             self.messages.error(
-                u'Beklager, men brukeren %s har nådd maksgrensen på tre skap.'.format(user.username))
+                'Beklager, men brukeren {} har nådd maksgrensen på tre skap.'.format(user.username))
         else:
             reg = RegistrationRequest.objects.create_from_data(form.cleaned_data)
             reg.send_confirmation_email(request=self.request)
-            self.messages.error(u'En bekreftelsesepost er sendt til %s. ' % reg.get_email() +  # Error for color in bootstrap
-                                u'Husk å bekrefte eposten som nå er sendt, hvis ikke så gjelder ikke reserveringen!')
+            self.messages.error('En bekreftelsesepost er sendt til %s. ' % reg.get_email() +  # Error for color in bootstrap
+                                'Husk å bekrefte eposten som nå er sendt, hvis ikke så gjelder ikke reserveringen!')
 
         return redirect("index_page")
 
 
-class RegistrationConfirmation(MessageMixin, View):
-    def get(self, request, key):
-        regreq = get_object_or_404(RegistrationRequest, confirmation_token=key)
+class RegistrationConfirmation(MessageMixin, TemplateView):
+    template_name = "locker/confirm.html"
+
+    def get_request(self):
+        return get_object_or_404(
+            RegistrationRequest,
+            confirmation_token=self.kwargs["key"]
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["regreq"] = self.get_request()
+        return context
+
+    def post(self, request, **kwargs):
+        regreq = self.get_request()
         regreq.confirm()
-        user, _ = User.objects.get_or_create(username=regreq.username)
         locker = regreq.locker
         self.messages.info(
-            u'Skap nummer {} i rom {} er nå registrert på {}'.format(
+            'Skap nummer {} i rom {} er nå registrert på {}'.format(
                 locker.locker_number,
                 locker.room,
-                user.username)
+                locker.owner.username)
         )
         return redirect('list_lockers', room=locker.room)
 

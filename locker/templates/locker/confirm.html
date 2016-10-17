@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <table class="table">
+        <tr>
+            <th>Skapnummer:</th>
+            <td>{{ regreq.locker.locker_number }}</td>
+        </tr>
+        <tr>
+            <th>Rom:</th>
+            <td>{{ regreq.locker.room }}</td>
+        </tr>
+        <tr>
+            <th>Brukernavn:</th>
+            <td>{{ regreq.username }}</td>
+        </tr>
+    </table>
+    {% if regreq.has_been_confirmed %}
+        <p>Sakpregistreringen er allerede bekreftet.</p>
+    {% else %}
+        <form action="" method="post">
+            {% csrf_token %}
+            <input class="btn btn-default btn-lg" type="submit" value="Trykk her for å bekrefte skapregistrering">
+        </form>
+    {% endif %}
+
+{% endblock content %}
+

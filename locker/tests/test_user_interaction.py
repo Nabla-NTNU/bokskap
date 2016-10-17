@@ -57,12 +57,18 @@ class TestTypicalUserInteraction(TestCase):
         self.assertTrue(urls_found)
 
         # When the user clicks the link
-        self.client.get(urls_found[0])
+        response = self.client.get(urls_found[0])
+        # she sees at button that she has to press
+        # which sends a post request to the same url
 
-        # the locker should be registered.
+        self.client.post(urls_found[0])
+
+        # the locker should then be registered.
         locker.refresh_from_db()
         self.assertTrue(locker.is_reserved())
 
-        # If the user tries to confirm again she gets a HTTP 404
-        result = self.client.get(urls_found[0])
-        self.assertEqual(result.status_code, 404)
+        # If the user tries to get the confirmation page again
+        # she gets a page telling her that the locker has already
+        # been registered.
+        response = self.client.get(urls_found[0])
+        self.assertEqual(response.status_code, 200)
