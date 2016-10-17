@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import redirect
-from django.views.generic import ListView, FormView
+from django.views.generic import ListView, FormView, TemplateView
 
 from braces.views import MessageMixin
 
@@ -77,7 +77,7 @@ class LockerRegistrationView(MessageMixin, FormView):
                 u'Beklager, men brukeren %s har nådd maksgrensen på tre skap.'.format(user.username))
         else:
             reg = RegistrationRequest.objects.create_from_data(form.cleaned_data)
-            reg.send_confirmation_email()
+            reg.send_confirmation_email(request=self.request)
             self.messages.error(u'En bekreftelsesepost er sendt til %s. ' % reg.get_email() +  # Error for color in bootstrap
                                 u'Husk å bekrefte eposten som nå er sendt, hvis ikke så gjelder ikke reserveringen!')
 

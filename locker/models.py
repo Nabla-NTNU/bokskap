@@ -121,9 +121,9 @@ class RegistrationRequest(models.Model):
     def get_email(self):
         return stud_email_from_username(self.username)
 
-    def send_confirmation_email(self):
+    def send_confirmation_email(self, request=None):
         email = self.get_email()
-        send_confirmation_email(email, self.locker, self.confirmation_token)
+        send_confirmation_email(email, self.locker, self.confirmation_token, request=None)
 
     def confirm(self):
         user, created = User.objects.get_or_create(username=self.username)

@@ -3,6 +3,7 @@ import string
 import random
 from django.core.mail import EmailMultiAlternatives
 from django.core.urlresolvers import reverse
+from django.contrib.sites.models import Site
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
@@ -33,10 +34,10 @@ def send_confirmation_email(email, locker, confirmation_token, request=None):
     confirmation_url = get_confirmation_url(confirmation_token, request=request)
 
     c = {
-            "confirmation_url": confirmation_url,
-            "room": locker.room,
-            "locker_number": locker.locker_number
-        }
+        "confirmation_url": confirmation_url,
+        "room": locker.room,
+        "locker_number": locker.locker_number
+    }
     send_template_email('email/confirmation_email.html', c, subject, [email])
 
 
@@ -52,7 +53,9 @@ def get_confirmation_url(token, request=None):
     relative_url = reverse('registration_confirmation', kwargs={'key': token})
     if request is not None:
         return request.build_absolute_uri(relative_url)
-    return 'http://bokskap.nabla.no' + relative_url
+    else:
+        site = Site.objects.get_current()
+        return "http://{}{}".format(site.domain, relative_url)
 
 
 def random_string(length=20, alphabet=string.ascii_letters+string.digits):
