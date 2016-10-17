@@ -1,7 +1,7 @@
 from django.conf.urls import url
 from django.views.generic import TemplateView
 from .views import (IndexPage, LockerRoomView, view_locker,
-                    LockerRegistrationView, registration_confirmation, LockerReminder,
+                    LockerRegistrationView, RegistrationConfirmation, LockerReminder,
                     UserList)
 
 
@@ -21,7 +21,7 @@ urlpatterns = [
         LockerRegistrationView.as_view(),
         name="locker_registration"),
     url(r'^confirm/(?P<key>\w+)/',
-        registration_confirmation,
+        RegistrationConfirmation.as_view(),
         name="registration_confirmation"),
     url(r'^reminder',
         LockerReminder.as_view(),

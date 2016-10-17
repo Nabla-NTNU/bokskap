@@ -2,10 +2,8 @@
 
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.contrib import messages
-from django.http import Http404
-from django.shortcuts import redirect
-from django.views.generic import ListView, FormView
+from django.shortcuts import redirect, get_object_or_404
+from django.views.generic import ListView, FormView, View
 
 from braces.views import MessageMixin
 
@@ -86,24 +84,19 @@ class LockerRegistrationView(MessageMixin, FormView):
         return redirect("index_page")
 
 
-def registration_confirmation(request, key):
-    # Try first the new way of confirming requests
-    try:
-        regreq = RegistrationRequest.objects.get(confirmation_token=key)
+class RegistrationConfirmation(MessageMixin, View):
+    def get(self, request, key):
+        regreq = get_object_or_404(RegistrationRequest, confirmation_token=key)
         regreq.confirm()
         user, _ = User.objects.get_or_create(username=regreq.username)
         locker = regreq.locker
-    except RegistrationRequest.DoesNotExist:
-        logger.warn("Missed key: {}".format(key))
-        raise Http404
-    messages.add_message(
-        request,
-        messages.INFO,
-        u'Skap nummer {} i rom {} er nå registrert på {}'.format(
-            locker.locker_number,
-            locker.room,
-            user.username))
-    return redirect('list_lockers', room=locker.room)
+        self.messages.info(
+            u'Skap nummer {} i rom {} er nå registrert på {}'.format(
+                locker.locker_number,
+                locker.room,
+                user.username)
+        )
+        return redirect('list_lockers', room=locker.room)
 
 
 class UserList(PermissionRequiredMixin, ListView):
