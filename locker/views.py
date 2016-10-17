@@ -5,13 +5,16 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import redirect
-from django.views.generic import ListView, FormView, TemplateView
+from django.views.generic import ListView, FormView
 
 from braces.views import MessageMixin
 
 from .models import Locker, RegistrationRequest
 from .forms import LockerSearchForm, UsernameForm, LockerRegistrationForm
 from .utils import send_locker_reminder, stud_email_from_username
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class IndexPage(FormView):
@@ -91,8 +94,6 @@ def registration_confirmation(request, key):
         user, _ = User.objects.get_or_create(username=regreq.username)
         locker = regreq.locker
     except RegistrationRequest.DoesNotExist:
-        import logging
-        logger = logging.getLogger(__name__)
         logger.warn("Missed key: {}".format(key))
         raise Http404
     messages.add_message(
