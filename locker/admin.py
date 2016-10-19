@@ -62,7 +62,7 @@ class InactiveLockerReservationAdmin(admin.ModelAdmin):
 @admin.register(RegistrationRequest)
 class RegistrationRequestAdmin(admin.ModelAdmin):
     actions = ("confirm",)
-    list_display = ("username", "locker", "creation_time")
+    list_display = ("username", "locker", "creation_time", "confirmation_time")
 
     def confirm(self, request, queryset):
         for reg_request in queryset:

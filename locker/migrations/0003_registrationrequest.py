@@ -18,11 +18,11 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('confirmation_token', models.CharField(blank=True, max_length=20, null=True, unique=True)),
-                ('creation_time', models.DateTimeField(auto_now_add=True)),
+                ('creation_time', models.DateTimeField(auto_now_add=True, verbose_name='Tidspunktet skapet ble forsøkt registrert.')),
                 ('username', models.CharField(max_length=30, verbose_name='Brukernavn')),
                 ('first_name', models.CharField(blank=True, max_length=30, verbose_name='Fornavn')),
                 ('last_name', models.CharField(blank=True, max_length=30, verbose_name='Etternavn')),
-                ('locker', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='locker.Locker')),
+                ('locker', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, verbose_name='Skap', to='locker.Locker')),
             ],
         ),
     ]

@@ -98,9 +98,14 @@ class RegistrationRequestManager(models.Manager):
 
 class RegistrationRequest(models.Model):
     confirmation_token = models.CharField(max_length=20, unique=True, blank=True, null=True)
-    creation_time = models.DateTimeField(auto_now_add=True)
+    creation_time = models.DateTimeField(
+        verbose_name="Tidspunktet skapet ble forsøkt registrert.",
+        auto_now_add=True)
 
-    locker = models.ForeignKey(Locker, blank=False)
+    locker = models.ForeignKey(
+        Locker,
+        verbose_name="Skap",
+        blank=False)
     username = models.CharField("Brukernavn", max_length=30, blank=False)
     first_name = models.CharField("Fornavn", max_length=30, blank=True)
     last_name = models.CharField("Etternavn", max_length=30, blank=True)
