@@ -1,11 +1,15 @@
 import string
-
 import random
+import logging
+
 from django.core.mail import EmailMultiAlternatives
 from django.core.urlresolvers import reverse
 from django.contrib.sites.models import Site
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+
+
+logger = logging.getLogger(__name__)
 
 
 def send_template_email(template_folder, context, subject, emails):
@@ -22,8 +26,10 @@ def send_template_email(template_folder, context, subject, emails):
 def send_locker_reminder(user):
     """Sender på epost med info om hvilke skap brukeren har."""
     subject = u'Liste over bokskap tilhørende %s' % (user.get_full_name())
-    c = {'lockers': user.locker_set.all()}
+    lockers = user.locker_set.all()
+    c = {'lockers': lockers}
     send_template_email('email/locker_reminder.html', c, subject, [user.email])
+    logger.info("Locker reminder sent to {} ({})".format(user, lockers))
 
 
 def send_confirmation_email(email, locker, confirmation_token, request=None):

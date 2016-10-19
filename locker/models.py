@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from django.db import models
 from django.contrib.auth.models import User
 import django.utils.timezone as timezone
 
 from .utils import random_string, stud_email_from_username, send_confirmation_email
+
+
+logger = logging.getLogger(__name__)
 
 
 class LockerManager(models.Manager):
@@ -41,6 +46,7 @@ class Locker(models.Model):
             self.owner = user
             self.time_reserved = timezone.now()
             self.save()
+            logger.info("{} is now registered to {}".format(self, user))
         if self.owner != user:
             raise LockerException(("{0} is already registered to {0.owner}"
                                    " and can't be registered to {1}").format(self, user))
@@ -125,6 +131,7 @@ class RegistrationRequest(models.Model):
     def save(self, **kwargs):
         if self.confirmation_token is None:
             self.confirmation_token = random_string()
+            logger.info("RegistrationRequest created: <{}>".format(self))
         super().save(**kwargs)
 
     def get_email(self):
@@ -133,12 +140,14 @@ class RegistrationRequest(models.Model):
     def send_confirmation_email(self, request=None):
         email = self.get_email()
         send_confirmation_email(email, self.locker, self.confirmation_token, request=request)
+        logger.info("Confirmation mail sent to {} for locker: {}".format(email, self.locker))
 
     def confirm(self):
         user, created = User.objects.get_or_create(username=self.username)
         self.locker.reserve(user)
         self.confirmation_time = timezone.now()
         self.save()
+        logger.info("{} is confirmed".format(self))
 
     def has_been_confirmed(self):
         return self.confirmation_time is not None

@@ -53,7 +53,7 @@ INSTALLED_APPS = (
     'bootstrap3',
     'grappelli',
     'locker',
-    'dbbackup', # http://django-dbbackup.readthedocs.org/
+    'dbbackup',  # http://django-dbbackup.readthedocs.org/
 )
 
 TEMPLATES = [
@@ -69,6 +69,8 @@ TEMPLATES = [
     },
 ]
 
+LOG_FOLDER = PROJECT_ROOT
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -82,7 +84,15 @@ LOGGING = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+        'file': {
+            'level': 'INFO',
+            'filters': [],
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(LOG_FOLDER, 'info.log'),
+            'when': 'W0',
+            'formatter': 'default',
+        },
     },
     'loggers': {
         'django.request': {
@@ -90,7 +100,17 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-    }
+        'locker': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        }
+    },
+    'formatters': {
+        'default': {
+            'format': '%(asctime)s %(levelname)s %(name)s: %(message)s',
+        },
+    },
 }
 
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'

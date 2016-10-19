@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -11,8 +12,10 @@ from .models import Locker, RegistrationRequest
 from .forms import LockerSearchForm, UsernameForm, LockerRegistrationForm
 from .utils import send_locker_reminder, stud_email_from_username
 
-import logging
 logger = logging.getLogger(__name__)
+
+
+MAX_LOCKERS_PER_USER = 3
 
 
 class IndexPage(FormView):
@@ -72,9 +75,10 @@ class LockerRegistrationView(MessageMixin, FormView):
         if created or not user.email:
             user.email = stud_email_from_username(user.username)
             user.save()
-        if user.locker_set.count() >= 3:
+        if user.locker_set.count() >= MAX_LOCKERS_PER_USER:
             self.messages.error(
                 'Beklager, men brukeren {} har nådd maksgrensen på tre skap.'.format(user.username))
+            logger.info("{} tried to register more than max lockers ({})".format(user, MAX_LOCKERS_PER_USER))
         else:
             reg = RegistrationRequest.objects.create_from_data(form.cleaned_data)
             reg.send_confirmation_email(request=self.request)
