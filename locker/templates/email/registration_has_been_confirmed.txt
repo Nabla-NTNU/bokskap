@@ -1,0 +1,9 @@
+Hei {{ username }},
+
+din registrering av skap {{ locker.locker_number }} i rom {{ locker.room }} er nå bekreftet.
+
+Registreringen gjelder kun for dette studieåret.
+Så husk at du må registrere skapet på nytt neste høst hvis du skal bruke det igjen neste studieår.
+
+Hilsen
+Linjeforeningen Nablas bokskapsystem

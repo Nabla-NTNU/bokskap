@@ -2,18 +2,19 @@ import string
 import random
 import logging
 
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.core.urlresolvers import reverse
 from django.contrib.sites.models import Site
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
+FROM_EMAIL_ADDRESS = "bokskap@nabla.ntnu.no"
 
 logger = logging.getLogger(__name__)
 
 
 def send_template_email(template_folder, context, subject, emails):
-    from_email = 'ikke_svar@nabla.ntnu.no'
+    from_email = FROM_EMAIL_ADDRESS
 
     html_content = render_to_string(template_folder, context)
     text_content = strip_tags(html_content)
@@ -35,7 +36,7 @@ def send_locker_reminder(user):
 def send_confirmation_email(email, locker, confirmation_token, request=None):
     """Sender bekfreftelsesepost til brukeren som prøvde å registrere seg."""
 
-    subject = ('Bekreftelse av reservasjon av skap {} i {}'
+    subject = ('Bekreftelse av registrering av skap {} i {}'
                .format(locker.locker_number, locker.room))
     confirmation_url = get_confirmation_url(confirmation_token, request=request)
 
@@ -45,6 +46,15 @@ def send_confirmation_email(email, locker, confirmation_token, request=None):
         "locker_number": locker.locker_number
     }
     send_template_email('email/confirmation_email.html', c, subject, [email])
+
+
+def send_locker_is_registered_email(username, locker):
+    subject = ('Skap {locker.locker_number} i {locker.room} er nå registrert på {username}'
+               .format(**locals()))
+    message = render_to_string("email/registration_has_been_confirmed.txt", context=locals())
+    email = stud_email_from_username(username)
+    send_mail(subject, message, FROM_EMAIL_ADDRESS, [email])
+    logger.info("Sent registration confirmed email to {email}".format(**locals()))
 
 
 def get_confirmation_url(token, request=None):

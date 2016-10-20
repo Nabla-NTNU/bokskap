@@ -72,3 +72,8 @@ class TestTypicalUserInteraction(TestCase):
         # been registered.
         response = self.client.get(urls_found[0])
         self.assertEqual(response.status_code, 200)
+
+        # The user should also have been sent an email saying
+        # that the registration has been confirmed
+        confirmed_email = mail.outbox[1]
+        confirmed_email

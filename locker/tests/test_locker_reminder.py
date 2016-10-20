@@ -23,12 +23,13 @@ class LockerReminderTest(TestCase):
         for l in lockers_registered:
             l.register(u)
 
+        num_mail_before_reminder = len(mail.outbox)
         # Send skappåmindelse
         send_locker_reminder(u)
 
         # Hent eposten som burde blitt sendt og skjekk om den ble sendt til
         # brukeren
-        the_mail = mail.outbox[0]
+        the_mail = mail.outbox[num_mail_before_reminder]
         self.assertIn(u.email, the_mail.to)
 
         # Skjekk om alle skapene ble nevnt i eposten.

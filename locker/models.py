@@ -5,7 +5,8 @@ from django.db import models
 from django.contrib.auth.models import User
 import django.utils.timezone as timezone
 
-from .utils import random_string, stud_email_from_username, send_confirmation_email
+from .utils import (random_string, stud_email_from_username,
+                    send_confirmation_email, send_locker_is_registered_email)
 
 
 logger = logging.getLogger(__name__)
@@ -46,6 +47,7 @@ class Locker(models.Model):
             self.owner = user
             self.time_reserved = timezone.now()
             self.save()
+            send_locker_is_registered_email(user.username, self)
             logger.info("{} is now registered to {}".format(self, user))
         if self.owner != user:
             raise LockerException(("{0} is already registered to {0.owner}"
