@@ -23,3 +23,17 @@ class UserFormTest(TestCase):
         self.user_dict['username'] = 'utropstegn!'
         form = UserForm(self.user_dict)
         self.assertFalse(form.is_valid())
+
+    def test_username_with_space_at_end(self):
+        # It looks like form.CharField strips whitespaces as of django 1.9.
+        # Didn't notice that before after the test was written.
+        original_username = self.user_dict['username']
+
+        self.user_dict['username'] = original_username + ' '
+
+        form = UserForm(self.user_dict)
+        self.assertTrue(form.is_valid())
+
+        cleaned_username = form.cleaned_data['username']
+        self.assertNotIn(' ', cleaned_username)
+        self.assertEqual(cleaned_username, original_username)
