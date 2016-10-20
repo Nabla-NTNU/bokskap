@@ -8,7 +8,6 @@ click==6.6                # via pip-tools
 django-bootstrap3==7.1.0
 django-braces==1.9.0
 django-dbbackup==3.0.3
-django-grappelli==2.8.2
 django==1.10.2
 factory-boy==2.7.0
 fake-factory==0.7.2       # via factory-boy
@@ -16,7 +15,7 @@ faker==0.7.3
 first==2.0.1              # via pip-tools
 gunicorn==19.6.0
 pip-tools==1.7.0
-PyMySQL==0.7.9
+pymysql==0.7.9
 python-dateutil==2.5.3    # via fake-factory, faker
 pytz==2016.7              # via django-dbbackup
 six==1.10.0               # via django-dbbackup, fake-factory, faker, pip-tools, python-dateutil
