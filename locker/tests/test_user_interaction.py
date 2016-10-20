@@ -41,7 +41,7 @@ class TestTypicalUserInteraction(TestCase):
 
         # The locker should not be registered yet,
         locker = Locker.objects.get(room=data['room'], locker_number=data['locker_number'])
-        self.assertFalse(locker.is_reserved())
+        self.assertFalse(locker.is_registered())
 
         # but the user should be sent an email containing an url to confirm the registration
         the_mail = mail.outbox[0]
@@ -65,7 +65,7 @@ class TestTypicalUserInteraction(TestCase):
 
         # the locker should then be registered.
         locker.refresh_from_db()
-        self.assertTrue(locker.is_reserved())
+        self.assertTrue(locker.is_registered())
 
         # If the user tries to get the confirmation page again
         # she gets a page telling her that the locker has already

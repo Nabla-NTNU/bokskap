@@ -37,12 +37,12 @@ class LockerAdmin(admin.ModelAdmin):
     def cut_locker(self, request, queryset):
         """Unregister a locker and mark it as cut"""
         for s in queryset.all():
-            s.unreserve(lock_cut=True)
+            s.unregister(lock_cut=True)
 
     def unreserve_locker(self, request, queryset):
         """Unregister a locker"""
         for s in queryset.all():
-            s.unreserve(lock_cut=False)
+            s.unregister(lock_cut=False)
 
 
 @admin.register(InactiveLockerReservation)

@@ -49,7 +49,7 @@ class LockerRegistrationForm(UserForm, LockerSearchForm):
 
     def clean(self):
         cleaned_data = super(LockerRegistrationForm, self).clean()
-        if self.locker.is_reserved():
+        if self.locker.is_registered():
             raise forms.ValidationError(
                 "Skapet er allerede i bruk. Velg et annet skap.")
         return cleaned_data

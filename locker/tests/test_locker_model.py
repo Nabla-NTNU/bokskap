@@ -16,13 +16,13 @@ class LockerModelTest(TestCase):
 
     def test_reserve(self):
         l = self.lockers[0]
-        self.assertFalse(l.is_reserved())
+        self.assertFalse(l.is_registered())
 
         before = timezone.now()
-        l.reserve(self.user)
+        l.register(self.user)
         after = timezone.now()
 
-        self.assertTrue(l.is_reserved(),
+        self.assertTrue(l.is_registered(),
                         "The locker is not registered when it should be.")
         self.assertEqual(l.owner, self.user,
                          "The locker is not registered to the correct user.")
@@ -31,10 +31,10 @@ class LockerModelTest(TestCase):
 
     def test_unreserve(self):
         l = self.lockers[0]
-        l.reserve(self.user)
+        l.register(self.user)
 
-        l.unreserve()
-        self.assertFalse(l.is_reserved(), "Check if is registered")
+        l.unregister()
+        self.assertFalse(l.is_registered(), "Check if is registered")
 
     def test_str(self):
         for l in self.lockers:
@@ -52,7 +52,7 @@ class LockerModelTest(TestCase):
     def test_register_twice(self):
         user2 = User.objects.create(username="lala")
         l = self.lockers[0]
-        l.reserve(self.user)
+        l.register(self.user)
         with self.assertRaises(LockerException):
-            l.reserve(user2)
+            l.register(user2)
         self.assertEqual(l.owner, self.user)

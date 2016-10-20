@@ -21,7 +21,7 @@ class LockerReminderTest(TestCase):
         # Registrer noen skap på brukeren
         lockers_registered = self.lockers[:2]
         for l in lockers_registered:
-            l.reserve(u)
+            l.register(u)
 
         # Send skappåmindelse
         send_locker_reminder(u)

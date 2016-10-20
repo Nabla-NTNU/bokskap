@@ -41,8 +41,8 @@ class Locker(models.Model):
         verbose_name = "Skap"
         verbose_name_plural = "Skap"
 
-    def reserve(self, user):
-        if not self.is_reserved():
+    def register(self, user):
+        if not self.is_registered():
             self.owner = user
             self.time_reserved = timezone.now()
             self.save()
@@ -51,8 +51,8 @@ class Locker(models.Model):
             raise LockerException(("{0} is already registered to {0.owner}"
                                    " and can't be registered to {1}").format(self, user))
 
-    def unreserve(self, lock_cut=False):
-        if self.is_reserved():
+    def unregister(self, lock_cut=False):
+        if self.is_registered():
             inactive = InactiveLockerReservation()
             inactive.owner = self.owner
             inactive.lock_cut = lock_cut
@@ -64,7 +64,7 @@ class Locker(models.Model):
             self.owner = None
             self.save()
 
-    def is_reserved(self):
+    def is_registered(self):
         return bool(self.owner)
 
     def __str__(self):
@@ -144,7 +144,7 @@ class RegistrationRequest(models.Model):
 
     def confirm(self):
         user, created = User.objects.get_or_create(username=self.username)
-        self.locker.reserve(user)
+        self.locker.register(user)
         self.confirmation_time = timezone.now()
         self.save()
         logger.info("{} is confirmed".format(self))

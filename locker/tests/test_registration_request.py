@@ -48,7 +48,7 @@ class Test2(TestCase):
     def test_confirmation(self):
         self.reg.confirm()
         locker = self.reg.locker
-        self.assertTrue(locker.is_reserved())
+        self.assertTrue(locker.is_registered())
         self.assertTrue(locker.owner.username, self.reg.username)
 
         # Request object is not deleted
