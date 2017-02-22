@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 import django.utils.timezone as timezone
 
 from .utils import (random_string, stud_email_from_username,
-                    send_confirmation_email, send_locker_is_registered_email)
+                    send_confirmation_email, send_locker_is_registered_email, get_confirmation_url, send_template_email)
 
 
 logger = logging.getLogger(__name__)
@@ -65,6 +65,31 @@ class Locker(models.Model):
             self.time_reserved = None
             self.owner = None
             self.save()
+
+    def reset(self):
+        """
+        Avregistrer et skap og sender mail hvor det kan registreres på nytt
+        """
+        if not self.is_registered():
+            return
+
+        request = RegistrationRequest.objects.create(
+            locker=self,
+            username=self.owner.username,
+            first_name=self.owner.first_name,
+            last_name=self.owner.last_name)
+
+        self.unregister()
+
+        c = {
+            "confirmation_url": get_confirmation_url(request.confirmation_token),
+            "room": self.room,
+            "locker_number": self.locker_number
+        }
+
+        subject = "Registrere skap på nytt for neste semester"
+        email = request.get_email()
+        send_template_email("email/locker_reset.html", c, subject, [email])
 
     def is_registered(self):
         return bool(self.owner)
