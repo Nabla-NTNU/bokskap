@@ -36,7 +36,7 @@ def send_locker_reminder(user):
 def send_confirmation_email(email, locker, confirmation_token, request=None):
     """Sender bekfreftelsesepost til brukeren som prøvde å registrere seg."""
 
-    subject = ('Bekreftelse av registrering av skap {} i {}'
+    subject = ('Fullfør registringen av skap {} i {}'
                .format(locker.locker_number, locker.room))
     confirmation_url = get_confirmation_url(confirmation_token, request=request)
 
