@@ -3,7 +3,10 @@ pymysql.install_as_MySQLdb()
 
 from .base import *
 
-DEBUG = False
+import os
+get_env = os.environ.get
+
+DEBUG = bool(get_env('DEBUG', False))
 ALLOWED_HOSTS = ['bokskap.nabla.no']
 
 ADMINS = (
@@ -20,21 +23,13 @@ DATABASES = {
     }
 }
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': '/var/log/django/bokskap/debug.log',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
+DEBUG = bool(get_env('DEBUG', False))
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': get_env('MYSQL_DATABASE'),
+        'USER': get_env('MYSQL_USER'),
+        'PASSWORD': get_env('MYSQL_USER_PASSWORD'),
+    }
 }

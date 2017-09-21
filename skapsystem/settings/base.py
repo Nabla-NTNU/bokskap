@@ -16,8 +16,9 @@ USE_L10N = True
 USE_TZ = True
 
 PROJECT_ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
+VARIABLE_ROOT = os.environ.get("VARIABLE_ROOT", PROJECT_ROOT)
 
-STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static_collected')
+STATIC_ROOT = os.path.join(VARIABLE_ROOT, 'static_collected')
 STATIC_URL = '/static/'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
@@ -68,7 +69,7 @@ TEMPLATES = [
     },
 ]
 
-LOG_FOLDER = PROJECT_ROOT
+LOG_FOLDER = VARIABLE_ROOT
 
 LOGGING = {
     'version': 1,
