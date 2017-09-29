@@ -53,7 +53,6 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'bootstrap3',
     'locker',
-    'dbbackup',  # http://django-dbbackup.readthedocs.org/
 )
 
 TEMPLATES = [

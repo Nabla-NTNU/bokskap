@@ -1,9 +1,0 @@
-pip-tools
-django~=1.10
-django-bootstrap3
-django-braces
-django-dbbackup
-pymysql
-gunicorn
-factory_boy
-faker
