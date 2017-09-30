@@ -11,7 +11,10 @@ from .fixture_factories import LockerFactory
 class CreateConfirmationTokenTest(TestCase):
     def setUp(self):
         self.locker = LockerFactory.create()
-        self.user = User.objects.create(username="username")
+        self.user = User.objects.create(
+            username="username",
+            email="username@example.com",
+        )
 
     def test_send_confirmation_email(self):
         token = "thetoken"
@@ -19,7 +22,9 @@ class CreateConfirmationTokenTest(TestCase):
         l = self.locker
         send_confirmation_email(u.email, self.locker, token)
 
-        the_mail = mail.outbox[0]
+        self.assertEqual(len(mail.outbox), 1)
+        the_mail = mail.outbox.pop()
+
         self.assertIn(u.email, the_mail.to)
 
         body = the_mail.body
@@ -44,7 +49,7 @@ class ConfirmationUrlTest(TestCase):
     def test_from_request(self):
         factory = RequestFactory()
         request = factory.get("/", secure=True)
-        server_name = "lalal.bokskap.nabla.no"
+        server_name = "bokskap.nabla.no"
         request.META["SERVER_NAME"] = server_name
 
         url = get_confirmation_url(self.token, request=request)

@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core import mail
 from .fixture_factories import LockerFactory
 
+
 class TestResetAll(TestCase):
     def setUp(self):
         self.lockers = LockerFactory.create_batch(10)
@@ -13,7 +14,7 @@ class TestResetAll(TestCase):
             locker.register(user)
             self.assertTrue(locker.is_registered())
 
-        mail.outbox = []
+        mail.outbox.clear()
 
         for locker in self.lockers:
             locker.reset()

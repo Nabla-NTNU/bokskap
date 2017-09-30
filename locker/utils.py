@@ -2,7 +2,7 @@ import string
 import random
 import logging
 
-from django.core.mail import EmailMultiAlternatives, send_mail
+from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.contrib.sites.models import Site
 from django.template.loader import render_to_string
@@ -13,15 +13,20 @@ FROM_EMAIL_ADDRESS = "bokskap@nabla.ntnu.no"
 logger = logging.getLogger(__name__)
 
 
-def send_template_email(template_folder, context, subject, emails):
+def send_template_email(template, context, subject, emails):
     from_email = FROM_EMAIL_ADDRESS
 
-    html_content = render_to_string(template_folder, context)
+    html_content = render_to_string(template, context)
     text_content = strip_tags(html_content)
 
-    msg = EmailMultiAlternatives(subject, text_content, from_email, emails)
-    msg.attach_alternative(html_content, "text/html")
-    msg.send()
+    send_mail(
+        subject=subject,
+        message=text_content,
+        from_email=from_email,
+        recipient_list=emails,
+        html_message=html_content,
+    )
+
 
 
 def send_locker_reminder(user):

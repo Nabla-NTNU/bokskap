@@ -11,7 +11,10 @@ from .fixture_factories import LockerFactory
 class LockerReminderTest(TestCase):
 
     def setUp(self):
-        self.user = User.objects.create(username="abc")
+        self.user = User.objects.create(
+            username="abc",
+            email="abc@example.com",
+        )
         self.lockers = LockerFactory.create_batch(10)
 
     def test_send_locker_reminder(self):
@@ -23,13 +26,14 @@ class LockerReminderTest(TestCase):
         for l in lockers_registered:
             l.register(u)
 
-        num_mail_before_reminder = len(mail.outbox)
+        mail.outbox.clear()
         # Send skappåmindelse
         send_locker_reminder(u)
 
         # Hent eposten som burde blitt sendt og skjekk om den ble sendt til
         # brukeren
-        the_mail = mail.outbox[num_mail_before_reminder]
+        self.assertEqual(len(mail.outbox), 1)
+        the_mail = mail.outbox.pop()
         self.assertIn(u.email, the_mail.to)
 
         # Skjekk om alle skapene ble nevnt i eposten.

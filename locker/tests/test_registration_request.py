@@ -37,7 +37,8 @@ class Test2(TestCase):
         self.reg.send_confirmation_email()
         email = self.reg.get_email()
 
-        the_mail = mail.outbox[0]
+        self.assertEqual(len(mail.outbox), 1)
+        the_mail = mail.outbox.pop()
         self.assertIn(email, the_mail.to)
 
         body = the_mail.body
@@ -49,7 +50,7 @@ class Test2(TestCase):
         self.reg.confirm()
         locker = self.reg.locker
         self.assertTrue(locker.is_registered())
-        self.assertTrue(locker.owner.username, self.reg.username)
+        self.assertEqual(locker.owner.username, self.reg.username)
 
         # Request object is not deleted
         reg = RegistrationRequest.objects.get(id=self.reg.id)

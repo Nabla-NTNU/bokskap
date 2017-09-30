@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 
-django = "==1.10.8"
+django = "==1.11.5"
 "django-bootstrap3" = "*"
 "django-braces" = "*"
 pymysql = "*"

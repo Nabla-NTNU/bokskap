@@ -6,7 +6,7 @@ import os
 DEBUG = True
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["bokskap.nabla.no"]
 TIME_ZONE = 'Europe/Oslo'
 LANGUAGE_CODE = 'nb'
 SITE_ID = 1
