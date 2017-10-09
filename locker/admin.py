@@ -47,7 +47,9 @@ class LockerAdmin(admin.ModelAdmin):
 
 @admin.register(InactiveLockerReservation)
 class InactiveLockerReservationAdmin(admin.ModelAdmin):
-    list_display = ('locker', 'owner', 'lock_cut')
+    list_display = ('locker', 'owner', 'time_unreserved', 'lock_cut')
+    list_filter = ('locker__room',)
+    search_fields = ('locker__room', '^locker__locker_number', '^owner__username')
     fields = ('locker', 'owner', 'owner_name', 'owner_email',
               'time_reserved', 'time_unreserved', 'lock_cut')
     readonly_fields = ('locker', 'owner_name', 'owner_email')

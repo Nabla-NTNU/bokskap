@@ -112,8 +112,8 @@ class InactiveLockerReservation(models.Model):
     locker = models.ForeignKey(Locker, blank=False)
 
     class Meta:
-        verbose_name = "Inaktiv registrering"
-        verbose_name_plural = "Inaktive registreringer"
+        verbose_name = "Avregistrert Eierforhold"
+        verbose_name_plural = "Avregistrerte Eierforhold"
 
     def __str__(self):
         return "({0.locker}, {0.owner}) ".format(self)
