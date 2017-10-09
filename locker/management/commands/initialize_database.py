@@ -14,4 +14,5 @@ class Command(BaseCommand):
             for locker_number in range(1, num_lockers+1):
                 l = Locker.objects.get_or_create(room=room,
                                                  locker_number=locker_number)
+                print(f"Created\t {room}\t {locker_number}")
         print("Created the lockers")
