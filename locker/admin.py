@@ -65,6 +65,8 @@ class InactiveLockerReservationAdmin(admin.ModelAdmin):
 class RegistrationRequestAdmin(admin.ModelAdmin):
     actions = ("confirm",)
     list_display = ("username", "locker", "creation_time", "confirmation_time")
+    list_filter = ('locker__room',)
+    search_fields = ('locker__room', '^locker__locker_number', '^username')
 
     def confirm(self, request, queryset):
         for reg_request in queryset:
