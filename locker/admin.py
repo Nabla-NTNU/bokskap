@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Locker, InactiveLockerReservation, RegistrationRequest
+from .models import Locker, Ownership, RegistrationRequest
 
 
 class HasOwnerListFilter(admin.SimpleListFilter):
@@ -18,15 +18,31 @@ class HasOwnerListFilter(admin.SimpleListFilter):
         if self.value() == 'empty':
             return queryset.filter(owner__isnull=True)
 
+class IsUnregistered(admin.SimpleListFilter):
+    title = 'status'
+    parameter_name = 'isunregistered'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('unregistered', 'Avregistrerte'),
+            ('registered', 'Registrerte'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'unregistered':
+            return queryset.filter(time_unreserved__isnull=False)
+        if self.value() == 'registered':
+            return queryset.filter(time_unreserved__isnull=True)
+    
+
 
 @admin.register(Locker)
 class LockerAdmin(admin.ModelAdmin):
-    list_display = ('locker_number', 'room', 'owner')
-    list_filter = ('room', HasOwnerListFilter,)
+    list_display = ('locker_number', 'room')
     ordering = ('room', 'locker_number',)
     actions = ('unreserve_locker', 'cut_locker',)
-    fields = ('owner', 'owner_name', 'owner_email', 'time_reserved')
-    readonly_fields = ('owner_name', 'owner_email')
+    fields = ('locker_number', 'room')
+    readonly_fields = ('locker_number', 'room')
 
     def owner_name(self, locker):
         return locker.owner.get_full_name()
@@ -44,23 +60,21 @@ class LockerAdmin(admin.ModelAdmin):
         for s in queryset.all():
             s.unregister(lock_cut=False)
 
+@admin.register(Ownership)
+class OwnershipAdmin(admin.ModelAdmin):
+    list_display = ("owner", "locker", "time_unreserved", 'is_unreserved')
+    list_filter = (IsUnregistered,)
+    fields = ("owner", "locker", "time_reserved", "time_unreserved", "lock_cut")
+    readonly_fields = ("owner", "locker", "time_reserved", "time_unreserved")
+    actions = ('unreserve',)
 
-@admin.register(InactiveLockerReservation)
-class InactiveLockerReservationAdmin(admin.ModelAdmin):
-    list_display = ('locker', 'owner', 'time_unreserved', 'lock_cut')
-    list_filter = ('locker__room',)
-    search_fields = ('locker__room', '^locker__locker_number', '^owner__username')
-    fields = ('locker', 'owner', 'owner_name', 'owner_email',
-              'time_reserved', 'time_unreserved', 'lock_cut')
-    readonly_fields = ('locker', 'owner_name', 'owner_email')
-
-    def owner_name(self, locker):
-        return locker.owner.get_full_name()
-
-    def owner_email(self, locker):
-        return locker.owner.email
-
-
+    def is_unreserved(self, Ownership):
+        return not bool(Ownership.time_unreserved is None)
+    
+    def unreserve(self, request, queryset):
+        for s in queryset.all():
+            s.unregister(lock_cut=False)
+    
 @admin.register(RegistrationRequest)
 class RegistrationRequestAdmin(admin.ModelAdmin):
     actions = ("confirm",)
