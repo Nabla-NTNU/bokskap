@@ -43,7 +43,12 @@ class Locker(models.Model):
         verbose_name = "Skap"
         verbose_name_plural = "Skap"
 
-
+    def register(self, user):
+        try:
+            ownership = Ownership.objects.create_ownership(locker=self, user=user)
+        except LockerReservedException as e:
+            raise e
+            
     def is_registered(self):
         return Ownership.objects.filter(locker=self, time_unreserved = None)
     
@@ -55,7 +60,7 @@ class OwnershipManager(models.Manager):
     def create_ownership(self, locker, user):
         if locker.is_registered():
             raise LockerReservedException(f"{locker} is allready reserved")
-            
+
         ownership = self.create(locker=locker, user=user, time_reserved = timezone.now())
         send_locker_is_registered_email(user.username, locker)
         logger.info(f"{locker} is now registered to {user}")
@@ -148,16 +153,16 @@ class RegistrationRequest(models.Model):
         logger.info("Confirmation mail sent to {} for locker: {}".format(email, self.locker))
 
     def confirm(self):
-        user, created = User.objects.get_or_create(username=self.username)
+        user, created = User.objects.get_or_create(username=self.username, first_name=self.first_name, last_name=self.last_name)
         try:
-            ownership = Ownership.objects.create_ownership(locker=self.locker, user=user)
+            self.locker.register(user)
         except LockerReservedException as e:
-            logger.info(f"{self.locker} is allready reserved. Cannot reserve for {user}.")
+            logger.info(str(e))
             raise e
-        else:
-            self.confirmation_time = timezone.now()
-            self.save()
-            logger.info("{} is confirmed".format(self))
+        
+        self.confirmation_time = timezone.now()
+        self.save()
+        logger.info("{} is confirmed".format(self))
 
     def has_been_confirmed(self):
         return self.confirmation_time is not None
