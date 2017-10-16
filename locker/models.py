@@ -68,14 +68,12 @@ class Ownership(models.Model):
     owner = models.ForeignKey(User, blank=False, null=False, verbose_name="Skap", on_delete=models.CASCADE)
     time_reserved = models.DateTimeField(blank=False, null=True)
     
-    lock_cut = models.BooleanField(default=False)
     time_unreserved = models.DateTimeField(blank=True, null=True) # Locker is active until unreserved
 
     objects = OwnershipManager()
 
-    def unregister(self, lock_cut):
+    def unregister(self):
         self.time_unreserved = timezone.now()
-        self.lock_cut = lock_cut
         self.save()
 
     def is_active(self):

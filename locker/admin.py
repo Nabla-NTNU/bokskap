@@ -50,21 +50,16 @@ class LockerAdmin(admin.ModelAdmin):
     def owner_email(self, locker):
         return locker.owner.email
 
-    def cut_locker(self, request, queryset):
-        """Unregister a locker and mark it as cut"""
-        for s in queryset.all():
-            s.unregister(lock_cut=True)
-
     def unreserve_locker(self, request, queryset):
         """Unregister a locker"""
         for s in queryset.all():
-            s.unregister(lock_cut=False)
+            s.unregister()
 
 @admin.register(Ownership)
 class OwnershipAdmin(admin.ModelAdmin):
     list_display = ("owner", "locker", "time_unreserved", 'is_unreserved')
     list_filter = (IsUnregistered,)
-    fields = ("owner", "locker", "time_reserved", "time_unreserved", "lock_cut")
+    fields = ("owner", "locker", "time_reserved", "time_unreserved")
     readonly_fields = ("owner", "locker", "time_reserved", "time_unreserved")
     actions = ('unreserve',)
 
@@ -73,7 +68,7 @@ class OwnershipAdmin(admin.ModelAdmin):
     
     def unreserve(self, request, queryset):
         for s in queryset.all():
-            s.unregister(lock_cut=False)
+            s.unregister()
     
 @admin.register(RegistrationRequest)
 class RegistrationRequestAdmin(admin.ModelAdmin):
