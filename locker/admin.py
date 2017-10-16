@@ -1,5 +1,6 @@
-from django.contrib import admin
-from .models import Locker, Ownership, RegistrationRequest
+from django.contrib import admin, messages
+from django.contrib.auth.models import User
+from .models import Locker, Ownership, RegistrationRequest, LockerReservedException
 
 
 class HasOwnerListFilter(admin.SimpleListFilter):
@@ -14,9 +15,9 @@ class HasOwnerListFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value() == 'busy':
-            return queryset.filter(owner__isnull=False)
+            return queryset.filter(user__isnull=False)
         if self.value() == 'empty':
-            return queryset.filter(owner__isnull=True)
+            return queryset.filter(user__isnull=True)
 
 class IsUnregistered(admin.SimpleListFilter):
     title = 'status'
@@ -44,12 +45,6 @@ class LockerAdmin(admin.ModelAdmin):
     fields = ('locker_number', 'room')
     readonly_fields = ('locker_number', 'room')
 
-    def owner_name(self, locker):
-        return locker.owner.get_full_name()
-
-    def owner_email(self, locker):
-        return locker.owner.email
-
     def unreserve_locker(self, request, queryset):
         """Unregister a locker"""
         for s in queryset.all():
@@ -57,14 +52,14 @@ class LockerAdmin(admin.ModelAdmin):
 
 @admin.register(Ownership)
 class OwnershipAdmin(admin.ModelAdmin):
-    list_display = ("owner", "locker", "time_unreserved", 'is_unreserved')
+    list_display = ("user", "locker", "time_unreserved", 'is_unreserved')
     list_filter = (IsUnregistered,)
-    fields = ("owner", "locker", "time_reserved", "time_unreserved")
-    readonly_fields = ("owner", "locker", "time_reserved", "time_unreserved")
+    fields = ("user", "locker", "time_reserved", "time_unreserved")
+    readonly_fields = ("user", "locker", "time_reserved", "time_unreserved")
     actions = ('unreserve',)
 
-    def is_unreserved(self, Ownership):
-        return bool(Ownership.time_unreserved is not None)
+    def is_unreserved(self, ownership):
+        return bool(ownership.time_unreserved is not None)
     
     def unreserve(self, request, queryset):
         for s in queryset.all():
@@ -79,4 +74,9 @@ class RegistrationRequestAdmin(admin.ModelAdmin):
 
     def confirm(self, request, queryset):
         for reg_request in queryset:
-            reg_request.confirm()
+            try:
+                reg_request.confirm()
+            except LockerReservedException as e: # Locker allready has an active ownership.
+                messages.error(request, str(e))
+            else:
+                self.message_user(request, f"{reg_request.locker} confirmed.")

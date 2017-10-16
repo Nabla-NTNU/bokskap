@@ -46,7 +46,6 @@ class LockerSearchForm(forms.Form):
 
 
 class LockerRegistrationForm(UserForm, LockerSearchForm):
-
     def clean(self):
         cleaned_data = super(LockerRegistrationForm, self).clean()
         if self.locker.is_registered():

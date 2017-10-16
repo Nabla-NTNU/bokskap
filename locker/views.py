@@ -53,7 +53,7 @@ class LockerReminder(MessageMixin, FormView):
     def form_valid(self, form):
         username = form.cleaned_data['username']
         user = User.objects.get(username=username)
-        ownerships=Ownership.objects.filter(owner=user)
+        ownerships=Ownership.objects.filter(user=user)
         send_locker_reminder(ownerships)
         self.messages.info('En liste over dine skap har blitt sendt til {}'.format(user.email))
         return redirect("index_page")
@@ -76,7 +76,7 @@ class LockerRegistrationView(MessageMixin, FormView):
         if created or not user.email:
             user.email = stud_email_from_username(user.username)
             user.save()
-        if User.objects.filter(ownership__owner=user, ownership__time_unreserved = None).count() >= MAX_LOCKERS_PER_USER:
+        if User.objects.filter(ownership__user=user, ownership__time_unreserved = None).count() >= MAX_LOCKERS_PER_USER:
             self.messages.error(
                 'Beklager, men brukeren {} har nådd maksgrensen på tre skap.'.format(user.username))
             logger.info("{} tried to register more than max lockers ({})".format(user, MAX_LOCKERS_PER_USER))

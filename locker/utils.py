@@ -32,11 +32,10 @@ def send_template_email(template, context, subject, emails):
 
 def send_locker_reminder(ownerships):
     """Sender på epost med info om hvilke skap brukeren har."""
-    owner = ownerships[0].owner
-    subject = u'Liste over bokskap tilhørende %s' % (owner.get_full_name())
+    user = ownerships[0].user
+    subject = u'Liste over bokskap tilhørende %s' % (user.get_full_name())
     c = {'ownerships': ownerships}
-    send_template_email('email/locker_reminder.html', c, subject, [owner.email])
-#    logger.info("Locker reminder sent to {} ({})".format(owner, lockers))
+    send_template_email('email/locker_reminder.html', c, subject, [user.email])
 
 
 def send_confirmation_email(email, locker, confirmation_token, request=None):

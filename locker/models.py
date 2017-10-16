@@ -20,6 +20,8 @@ class LockerManager(models.Manager):
 class LockerException(Exception):
     pass
 
+class LockerReservedException(Exception):
+    pass
 
 
 class Locker(models.Model):
@@ -43,29 +45,26 @@ class Locker(models.Model):
 
 
     def is_registered(self):
-        return Ownership.objects.filter(locker=self)
+        return Ownership.objects.filter(locker=self, time_unreserved = None)
     
     def __str__(self):
         return "({0.room}, {0.locker_number}) ".format(self)
 
-class LockerReservedException(Exception):
-    pass
-
 
 class OwnershipManager(models.Manager):
-    def create_ownership(self, locker, owner):
-        if Ownership.objects.filter(locker = locker, time_unreserved = None):
-            raise LockerReservedException()
+    def create_ownership(self, locker, user):
+        if locker.is_registered():
+            raise LockerReservedException(f"{locker} is allready reserved")
             
-        ownership = self.create(locker=locker, owner=owner, time_reserved = timezone.now())
-        send_locker_is_registered_email(owner.username, locker)
-        logger.info(f"{locker} is now registered to {owner}")
+        ownership = self.create(locker=locker, user=user, time_reserved = timezone.now())
+        send_locker_is_registered_email(user.username, locker)
+        logger.info(f"{locker} is now registered to {user}")
         return ownership
         
     
 class Ownership(models.Model):
     locker = models.ForeignKey(Locker, blank=False, null=False, verbose_name="Skap", on_delete=models.CASCADE) # Locker and user should not be deletd, but CASCADE just in case.
-    owner = models.ForeignKey(User, blank=False, null=False, verbose_name="Skap", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, blank=False, null=False, verbose_name="Bruker", on_delete=models.CASCADE)
     time_reserved = models.DateTimeField(blank=False, null=True)
     
     time_unreserved = models.DateTimeField(blank=True, null=True) # Locker is active until unreserved
@@ -76,18 +75,15 @@ class Ownership(models.Model):
         self.time_unreserved = timezone.now()
         self.save()
 
-    def is_active(self):
-        return self.time_unreserved is None #A locker is active until it is unreserved
-        
     def reset(self):
         """
         Avregistrer et skap og sender mail hvor det kan registreres på nytt
         """
         request = RegistrationRequest.objects.create(
             locker=self.locker,
-            username=self.owner.username,
-            first_name=self.owner.first_name,
-            last_name=self.owner.last_name)
+            username=self.user.username,
+            first_name=self.user.first_name,
+            last_name=self.user.last_name)
 
         self.unregister()
 
@@ -154,9 +150,10 @@ class RegistrationRequest(models.Model):
     def confirm(self):
         user, created = User.objects.get_or_create(username=self.username)
         try:
-            ownership = Ownership.objects.create_ownership(locker=self.locker, owner=user)
-        except LockerReservedException:
+            ownership = Ownership.objects.create_ownership(locker=self.locker, user=user)
+        except LockerReservedException as e:
             logger.info(f"{self.locker} is allready reserved. Cannot reserve for {user}.")
+            raise e
         else:
             self.confirmation_time = timezone.now()
             self.save()
