@@ -69,7 +69,7 @@ class OwnershipAdmin(admin.ModelAdmin):
     actions = ('unreserve',)
 
     def is_unreserved(self, Ownership):
-        return not bool(Ownership.time_unreserved is None)
+        return bool(Ownership.time_unreserved is not None)
     
     def unreserve(self, request, queryset):
         for s in queryset.all():

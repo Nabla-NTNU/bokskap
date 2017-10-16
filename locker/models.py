@@ -48,24 +48,30 @@ class Locker(models.Model):
     def __str__(self):
         return "({0.room}, {0.locker_number}) ".format(self)
 
+class LockerReservedException(Exception):
+    pass
+
+
 class OwnershipManager(models.Manager):
     def create_ownership(self, locker, owner):
-        ownership
-        self.locker = locker
-        self.owner = owner
-        self.time_reserved = timezone.now()
-        self.save()
+        if Ownership.objects.filter(locker = locker, time_unreserved = None):
+            raise LockerReservedException()
+            
+        ownership = self.create(locker=locker, owner=owner, time_reserved = timezone.now())
         send_locker_is_registered_email(owner.username, locker)
         logger.info(f"{locker} is now registered to {owner}")
+        return ownership
         
     
 class Ownership(models.Model):
-    locker = models.ForeignKey(Locker, blank=False, null=False, verbose_name="Skap")
-    owner = models.ForeignKey(User, blank=False, null=False, verbose_name="Skap")
+    locker = models.ForeignKey(Locker, blank=False, null=False, verbose_name="Skap", on_delete=models.CASCADE) # Locker and user should not be deletd, but CASCADE just in case.
+    owner = models.ForeignKey(User, blank=False, null=False, verbose_name="Skap", on_delete=models.CASCADE)
     time_reserved = models.DateTimeField(blank=False, null=True)
     
     lock_cut = models.BooleanField(default=False)
     time_unreserved = models.DateTimeField(blank=True, null=True) # Locker is active until unreserved
+
+    objects = OwnershipManager()
 
     def unregister(self, lock_cut):
         self.time_unreserved = timezone.now()
@@ -122,7 +128,7 @@ class RegistrationRequest(models.Model):
     last_name = models.CharField("Etternavn", max_length=30, blank=True)
 
     confirmation_time = models.DateTimeField(
-            verbose_name="Tidspunktet forspørselen ble bekreftet", null=True)
+            verbose_name="Tidspunktet forspørselen ble bekreftet", null=True, blank=True)
 
     objects = RegistrationRequestManager()
 
@@ -149,10 +155,14 @@ class RegistrationRequest(models.Model):
 
     def confirm(self):
         user, created = User.objects.get_or_create(username=self.username)
-        ownership = Ownership.objects.create(locker=self.locker, owner=user)
-        self.confirmation_time = timezone.now()
-        self.save()
-        logger.info("{} is confirmed".format(self))
+        try:
+            ownership = Ownership.objects.create_ownership(locker=self.locker, owner=user)
+        except LockerReservedException:
+            logger.info(f"{self.locker} is allready reserved. Cannot reserve for {user}.")
+        else:
+            self.confirmation_time = timezone.now()
+            self.save()
+            logger.info("{} is confirmed".format(self))
 
     def has_been_confirmed(self):
         return self.confirmation_time is not None
