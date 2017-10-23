@@ -10,9 +10,9 @@ class Command(BaseCommand):
     help = "Creates all lockers"
 
     def handle(self, *args, **options):
+        l = []
         for room, num_lockers in rooms:
             for locker_number in range(1, num_lockers+1):
-                l = Locker.objects.get_or_create(room=room,
-                                                 locker_number=locker_number)
-                print(f"Created\t {room}\t {locker_number}")
+                l.append(Locker(room=room, locker_number=locker_number))
+        Locker.objects.bulk_create(l)
         print("Created the lockers")
