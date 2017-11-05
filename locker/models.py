@@ -153,7 +153,13 @@ class RegistrationRequest(models.Model):
         logger.info("Confirmation mail sent to {} for locker: {}".format(email, self.locker))
 
     def confirm(self):
-        user, created = User.objects.get_or_create(username=self.username, first_name=self.first_name, last_name=self.last_name)
+        user, created = User.objects.get_or_create(username=self.username)
+        
+        if created:
+            user.first_name=self.first_name
+            user.last_name=self.last_name
+            user.save()
+        
         try:
             self.locker.register(user)
         except LockerReservedException as e:
