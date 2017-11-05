@@ -25,14 +25,14 @@ class IsUnregistered(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            ('unregistered', 'Avregistrerte'),
-            ('registered', 'Registrerte'),
+            ('inactive', 'Ikke-aktiv'),
+            ('active', 'Aktiv'),
         )
 
     def queryset(self, request, queryset):
-        if self.value() == 'unregistered':
+        if self.value() == 'inactive':
             return queryset.filter(time_unreserved__isnull=False)
-        if self.value() == 'registered':
+        if self.value() == 'active':
             return queryset.filter(time_unreserved__isnull=True)
     
 
@@ -44,11 +44,6 @@ class LockerAdmin(admin.ModelAdmin):
     actions = ('unreserve_locker', 'cut_locker',)
     fields = ('locker_number', 'room')
     readonly_fields = ('locker_number', 'room')
-
-    def unreserve_locker(self, request, queryset):
-        """Unregister a locker"""
-        for s in queryset.all():
-            s.unregister()
 
 @admin.register(Ownership)
 class OwnershipAdmin(admin.ModelAdmin):
