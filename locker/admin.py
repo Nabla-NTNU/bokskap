@@ -19,6 +19,7 @@ class HasOwnerListFilter(admin.SimpleListFilter):
         if self.value() == 'empty':
             return queryset.filter(user__isnull=True)
 
+        
 class IsUnregistered(admin.SimpleListFilter):
     title = 'status'
     parameter_name = 'isunregistered'
@@ -47,14 +48,16 @@ class LockerAdmin(admin.ModelAdmin):
 
 @admin.register(Ownership)
 class OwnershipAdmin(admin.ModelAdmin):
-    list_display = ("user", "locker", "time_unreserved", 'is_unreserved')
+    list_display = ("user", "locker", "time_unreserved", 'is_reserved')
     list_filter = (IsUnregistered,)
     fields = ("user", "locker", "time_reserved", "time_unreserved")
     readonly_fields = ("user", "locker", "time_reserved", "time_unreserved")
     actions = ('unreserve',)
 
-    def is_unreserved(self, ownership):
-        return bool(ownership.time_unreserved is not None)
+    def is_reserved(self, ownership):
+        return bool(ownership.time_unreserved is None)
+    is_reserved.boolean = True
+    is_reserved.short_description = "Aktivt"
     
     def unreserve(self, request, queryset):
         for s in queryset.all():
