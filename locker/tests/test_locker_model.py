@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 import django.utils.timezone as timezone
 
 from .fixture_factories import LockerFactory, fake_locker_registration_post_request
-from locker.models import Locker, LockerException
+from locker.models import Locker, LockerReservedException, Ownership
 
 
 class LockerModelTest(TestCase):
@@ -22,11 +22,13 @@ class LockerModelTest(TestCase):
         l.register(self.user)
         after = timezone.now()
 
+        ownership = Ownership.objects.get(locker=l)
+        
         self.assertTrue(l.is_registered(),
                         "The locker is not registered when it should be.")
         self.assertEqual(l.owner, self.user,
                          "The locker is not registered to the correct user.")
-        self.assertTrue(before <= l.time_reserved <= after,
+        self.assertTrue(before <= ownership.time_reserved <= after,
                         "Check if registration time was set.")
 
     def test_unreserve(self):
@@ -53,6 +55,6 @@ class LockerModelTest(TestCase):
         user2 = User.objects.create(username="lala")
         l = self.lockers[0]
         l.register(self.user)
-        with self.assertRaises(LockerException):
+        with self.assertRaises(LockerReservedException):
             l.register(user2)
         self.assertEqual(l.owner, self.user)

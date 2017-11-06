@@ -17,9 +17,6 @@ class LockerManager(models.Manager):
         return self.get(room=data["room"], locker_number=data["locker_number"])
 
 
-class LockerException(Exception):
-    pass
-
 class LockerReservedException(Exception):
     pass
 
@@ -44,13 +41,20 @@ class Locker(models.Model):
         verbose_name_plural = "Skap"
 
     def register(self, user):
-        try:
-            ownership = Ownership.objects.create_ownership(locker=self, user=user)
-        except LockerReservedException as e:
-            raise e
+        Ownership.objects.create_ownership(locker=self, user=user)
+
+    def unregister(self):
+        Ownership.objects.get(locker=self, time_unreserved=None).unregister()
+
+    def reset(self):
+        Ownership.objects.get(locker=self, time_unreserved=None).reset()
             
     def is_registered(self):
-        return Ownership.objects.filter(locker=self, time_unreserved = None)
+        return Ownership.objects.filter(locker=self, time_unreserved=None)
+
+    @property
+    def owner(self):
+        return User.objects.get(ownership__locker=self, ownership__time_unreserved=None)
     
     def __str__(self):
         return "({0.room}, {0.locker_number}) ".format(self)

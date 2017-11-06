@@ -8,7 +8,6 @@ from django.contrib.sites.models import Site
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
-
 FROM_EMAIL_ADDRESS = "bokskap@nabla.ntnu.no"
 
 logger = logging.getLogger(__name__)
@@ -29,11 +28,11 @@ def send_template_email(template, context, subject, emails):
     )
 
 
-
-def send_locker_reminder(ownerships):
+def send_locker_reminder(user):
     """Sender på epost med info om hvilke skap brukeren har."""
-    user = ownerships[0].user
+    from .models import Ownership
     subject = u'Liste over bokskap tilhørende %s' % (user.get_full_name())
+    ownerships = Ownership.objects.filter(user=user)
     c = {'ownerships': ownerships}
     send_template_email('email/locker_reminder.html', c, subject, [user.email])
 

@@ -53,8 +53,8 @@ class LockerReminder(MessageMixin, FormView):
     def form_valid(self, form):
         username = form.cleaned_data['username']
         user = User.objects.get(username=username)
-        ownerships=Ownership.objects.filter(user=user)
-        send_locker_reminder(ownerships)
+
+        send_locker_reminder(user)
         self.messages.info('En liste over dine skap har blitt sendt til {}'.format(user.email))
         return redirect("index_page")
 
