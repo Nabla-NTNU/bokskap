@@ -84,6 +84,10 @@ class Ownership(models.Model):
 
     objects = OwnershipManager()
 
+    class Meta:
+        verbose_name = "Eierforhold"
+        verbose_name_plural = "Eierforhold"
+
     def unregister(self):
         self.time_unreserved = timezone.now()
         self.save()
