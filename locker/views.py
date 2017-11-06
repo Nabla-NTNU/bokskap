@@ -8,7 +8,7 @@ from django.views.generic import ListView, FormView, TemplateView
 
 from braces.views import MessageMixin
 
-from .models import Locker, RegistrationRequest
+from .models import Locker, RegistrationRequest, Ownership
 from .forms import LockerSearchForm, UsernameForm, LockerRegistrationForm
 from .utils import send_locker_reminder, stud_email_from_username
 
@@ -53,6 +53,7 @@ class LockerReminder(MessageMixin, FormView):
     def form_valid(self, form):
         username = form.cleaned_data['username']
         user = User.objects.get(username=username)
+
         send_locker_reminder(user)
         self.messages.info('En liste over dine skap har blitt sendt til {}'.format(user.email))
         return redirect("index_page")
@@ -75,7 +76,7 @@ class LockerRegistrationView(MessageMixin, FormView):
         if created or not user.email:
             user.email = stud_email_from_username(user.username)
             user.save()
-        if user.locker_set.count() >= MAX_LOCKERS_PER_USER:
+        if User.objects.filter(ownership__user=user, ownership__time_unreserved = None).count() >= MAX_LOCKERS_PER_USER:
             self.messages.error(
                 'Beklager, men brukeren {} har nådd maksgrensen på tre skap.'.format(user.username))
             logger.info("{} tried to register more than max lockers ({})".format(user, MAX_LOCKERS_PER_USER))
@@ -110,7 +111,7 @@ class RegistrationConfirmation(MessageMixin, TemplateView):
             'Skap nummer {} i rom {} er nå registrert på {}'.format(
                 locker.locker_number,
                 locker.room,
-                locker.owner.username)
+                regreq.username)
         )
         return redirect('list_lockers', room=locker.room)
 

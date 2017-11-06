@@ -1,5 +1,6 @@
-from django.contrib import admin
-from .models import Locker, InactiveLockerReservation, RegistrationRequest
+from django.contrib import admin, messages
+from django.contrib.auth.models import User
+from .models import Locker, Ownership, RegistrationRequest, LockerReservedException
 
 
 class HasOwnerListFilter(admin.SimpleListFilter):
@@ -14,53 +15,54 @@ class HasOwnerListFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value() == 'busy':
-            return queryset.filter(owner__isnull=False)
+            return queryset.filter(user__isnull=False)
         if self.value() == 'empty':
-            return queryset.filter(owner__isnull=True)
+            return queryset.filter(user__isnull=True)
+
+        
+class IsUnregistered(admin.SimpleListFilter):
+    title = 'status'
+    parameter_name = 'isunregistered'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('inactive', 'Ikke-aktiv'),
+            ('active', 'Aktiv'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'inactive':
+            return queryset.filter(time_unreserved__isnull=False)
+        if self.value() == 'active':
+            return queryset.filter(time_unreserved__isnull=True)
+    
 
 
 @admin.register(Locker)
 class LockerAdmin(admin.ModelAdmin):
-    list_display = ('locker_number', 'room', 'owner')
-    list_filter = ('room', HasOwnerListFilter,)
+    list_display = ('locker_number', 'room')
     ordering = ('room', 'locker_number',)
     actions = ('unreserve_locker', 'cut_locker',)
-    fields = ('owner', 'owner_name', 'owner_email', 'time_reserved')
-    readonly_fields = ('owner_name', 'owner_email')
+    fields = ('locker_number', 'room')
+    readonly_fields = ('locker_number', 'room')
 
-    def owner_name(self, locker):
-        return locker.owner.get_full_name()
+@admin.register(Ownership)
+class OwnershipAdmin(admin.ModelAdmin):
+    list_display = ("user", "locker", "time_unreserved", 'is_reserved')
+    list_filter = (IsUnregistered,)
+    fields = ("user", "locker", "time_reserved", "time_unreserved")
+    readonly_fields = ("user", "locker", "time_reserved", "time_unreserved")
+    actions = ('unreserve',)
 
-    def owner_email(self, locker):
-        return locker.owner.email
-
-    def cut_locker(self, request, queryset):
-        """Unregister a locker and mark it as cut"""
+    def is_reserved(self, ownership):
+        return bool(ownership.time_unreserved is None)
+    is_reserved.boolean = True
+    is_reserved.short_description = "Aktivt"
+    
+    def unreserve(self, request, queryset):
         for s in queryset.all():
-            s.unregister(lock_cut=True)
-
-    def unreserve_locker(self, request, queryset):
-        """Unregister a locker"""
-        for s in queryset.all():
-            s.unregister(lock_cut=False)
-
-
-@admin.register(InactiveLockerReservation)
-class InactiveLockerReservationAdmin(admin.ModelAdmin):
-    list_display = ('locker', 'owner', 'time_unreserved', 'lock_cut')
-    list_filter = ('locker__room',)
-    search_fields = ('locker__room', '^locker__locker_number', '^owner__username')
-    fields = ('locker', 'owner', 'owner_name', 'owner_email',
-              'time_reserved', 'time_unreserved', 'lock_cut')
-    readonly_fields = ('locker', 'owner_name', 'owner_email')
-
-    def owner_name(self, locker):
-        return locker.owner.get_full_name()
-
-    def owner_email(self, locker):
-        return locker.owner.email
-
-
+            s.unregister()
+    
 @admin.register(RegistrationRequest)
 class RegistrationRequestAdmin(admin.ModelAdmin):
     actions = ("confirm",)
@@ -70,4 +72,9 @@ class RegistrationRequestAdmin(admin.ModelAdmin):
 
     def confirm(self, request, queryset):
         for reg_request in queryset:
-            reg_request.confirm()
+            try:
+                reg_request.confirm()
+            except LockerReservedException as e: # Locker allready has an active ownership.
+                messages.error(request, str(e))
+            else:
+                self.message_user(request, f"{reg_request.locker} confirmed.")

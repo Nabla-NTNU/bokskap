@@ -24,7 +24,7 @@ def fake_user_dict():
 
 def fake_locker_registration_post_request():
     data = fake_user_dict()
-    unused_locker = Locker.objects.filter(owner__isnull=True).first()
+    unused_locker = Locker.objects.filter(ownership__isnull=True).first()
     data['room'] = unused_locker.room
     data['locker_number'] = unused_locker.locker_number
     return data

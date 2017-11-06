@@ -17,7 +17,7 @@ class LockerManager(models.Manager):
         return self.get(room=data["room"], locker_number=data["locker_number"])
 
 
-class LockerException(Exception):
+class LockerReservedException(Exception):
     pass
 
 
@@ -32,8 +32,6 @@ class Locker(models.Model):
                             editable=False, verbose_name="Rom")
     locker_number = models.IntegerField(blank=False, editable=False,
                                         verbose_name="Skapnummer")
-    owner = models.ForeignKey(User, blank=True, null=True, verbose_name="Eier")
-    time_reserved = models.DateTimeField(blank=True, null=True)
 
     objects = LockerManager()
 
@@ -43,81 +41,78 @@ class Locker(models.Model):
         verbose_name_plural = "Skap"
 
     def register(self, user):
-        if not self.is_registered():
-            self.owner = user
-            self.time_reserved = timezone.now()
-            self.save()
-            send_locker_is_registered_email(user.username, self)
-            logger.info("{} is now registered to {}".format(self, user))
-        if self.owner != user:
-            raise LockerException(("{0} is already registered to {0.owner}"
-                                   " and can't be registered to {1}").format(self, user))
+        Ownership.objects.create_ownership(locker=self, user=user)
 
-    def unregister(self, lock_cut=False):
-        if self.is_registered():
-            inactive = InactiveLockerReservation()
-            inactive.owner = self.owner
-            inactive.lock_cut = lock_cut
-            inactive.locker = self
-            inactive.time_unreserved = timezone.now()
-            inactive.time_reserved = self.time_reserved
-            inactive.save()
-            self.time_reserved = None
-            self.owner = None
-            self.save()
+    def unregister(self):
+        self.ownership.unregister()
+
+    def reset(self):
+        self.ownership.reset()
+            
+    def is_registered(self):
+        return bool(self.ownership)
+
+    @property
+    def ownership(self):
+        return Ownership.objects.filter(locker=self, time_unreserved=None).first()
+    
+    @property
+    def owner(self):
+        return self.ownership.user
+    
+    def __str__(self):
+        return "({0.room}, {0.locker_number}) ".format(self)
+
+
+class OwnershipManager(models.Manager):
+    def create_ownership(self, locker, user):
+        if locker.is_registered():
+            raise LockerReservedException(f"{locker} is allready reserved")
+
+        ownership = self.create(locker=locker, user=user, time_reserved = timezone.now())
+        send_locker_is_registered_email(user.username, locker)
+        logger.info(f"{locker} is now registered to {user}")
+        return ownership
+        
+    
+class Ownership(models.Model):
+    locker = models.ForeignKey(Locker, blank=False, null=False, verbose_name="Skap", on_delete=models.CASCADE) # Locker and user should not be deletd, but CASCADE just in case.
+    user = models.ForeignKey(User, blank=False, null=False, verbose_name="Bruker", on_delete=models.CASCADE)
+    time_reserved = models.DateTimeField(blank=False, null=True)
+    
+    time_unreserved = models.DateTimeField(blank=True, null=True) # Locker is active until unreserved
+
+    objects = OwnershipManager()
+
+    class Meta:
+        verbose_name = "Eierforhold"
+        verbose_name_plural = "Eierforhold"
+
+    def unregister(self):
+        self.time_unreserved = timezone.now()
+        self.save()
 
     def reset(self):
         """
         Avregistrer et skap og sender mail hvor det kan registreres på nytt
         """
-        if not self.is_registered():
-            return
-
         request = RegistrationRequest.objects.create(
-            locker=self,
-            username=self.owner.username,
-            first_name=self.owner.first_name,
-            last_name=self.owner.last_name)
+            locker=self.locker,
+            username=self.user.username,
+            first_name=self.user.first_name,
+            last_name=self.user.last_name)
 
         self.unregister()
 
         c = {
             "confirmation_url": get_confirmation_url(request.confirmation_token),
-            "room": self.room,
-            "locker_number": self.locker_number
+            "room": self.locker.room,
+            "locker_number": self.locker.locker_number
         }
 
         subject = "Registrere skap på nytt for neste semester"
         email = request.get_email()
         send_template_email("email/locker_reset.html", c, subject, [email])
-
-    def is_registered(self):
-        return bool(self.owner)
-
-    def __str__(self):
-        return "({0.room}, {0.locker_number}) ".format(self)
-
-
-class InactiveLockerReservation(models.Model):
-    time_reserved = models.DateTimeField(blank=False)
-
-    # Datoen enten brukeren avregistrerte skapet
-    # eller Nabla klippet opp låsen og fjernet innholdet.
-    time_unreserved = models.DateTimeField(blank=False)
-
-    # Indikerer om låsen på skapet ble klippet av Nabla
-    lock_cut = models.BooleanField(blank=False, default=False)
-
-    owner = models.ForeignKey(User, blank=False)
-    locker = models.ForeignKey(Locker, blank=False)
-
-    class Meta:
-        verbose_name = "Avregistrert Eierforhold"
-        verbose_name_plural = "Avregistrerte Eierforhold"
-
-    def __str__(self):
-        return "({0.locker}, {0.owner}) ".format(self)
-
 
 class RegistrationRequestManager(models.Manager):
     def create_from_data(self, data):
@@ -144,7 +139,7 @@ class RegistrationRequest(models.Model):
     last_name = models.CharField("Etternavn", max_length=30, blank=True)
 
     confirmation_time = models.DateTimeField(
-            verbose_name="Tidspunktet forspørselen ble bekreftet", null=True)
+            verbose_name="Tidspunktet forspørselen ble bekreftet", null=True, blank=True)
 
     objects = RegistrationRequestManager()
 
@@ -171,7 +166,18 @@ class RegistrationRequest(models.Model):
 
     def confirm(self):
         user, created = User.objects.get_or_create(username=self.username)
-        self.locker.register(user)
+        
+        if created:
+            user.first_name=self.first_name
+            user.last_name=self.last_name
+            user.save()
+        
+        try:
+            self.locker.register(user)
+        except LockerReservedException as e:
+            logger.info(str(e))
+            raise e
+        
         self.confirmation_time = timezone.now()
         self.save()
         logger.info("{} is confirmed".format(self))

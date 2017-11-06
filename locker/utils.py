@@ -28,14 +28,13 @@ def send_template_email(template, context, subject, emails):
     )
 
 
-
 def send_locker_reminder(user):
     """Sender på epost med info om hvilke skap brukeren har."""
+    from .models import Ownership
     subject = u'Liste over bokskap tilhørende %s' % (user.get_full_name())
-    lockers = user.locker_set.all()
-    c = {'lockers': lockers}
+    ownerships = Ownership.objects.filter(user=user)
+    c = {'ownerships': ownerships}
     send_template_email('email/locker_reminder.html', c, subject, [user.email])
-    logger.info("Locker reminder sent to {} ({})".format(user, lockers))
 
 
 def send_confirmation_email(email, locker, confirmation_token, request=None):
