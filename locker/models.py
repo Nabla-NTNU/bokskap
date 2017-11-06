@@ -44,17 +44,21 @@ class Locker(models.Model):
         Ownership.objects.create_ownership(locker=self, user=user)
 
     def unregister(self):
-        Ownership.objects.get(locker=self, time_unreserved=None).unregister()
+        self.ownership.unregister()
 
     def reset(self):
-        Ownership.objects.get(locker=self, time_unreserved=None).reset()
+        self.ownership.reset()
             
     def is_registered(self):
-        return Ownership.objects.filter(locker=self, time_unreserved=None)
+        return bool(self.ownership)
 
     @property
+    def ownership(self):
+        return Ownership.objects.filter(locker=self, time_unreserved=None).first()
+    
+    @property
     def owner(self):
-        return User.objects.get(ownership__locker=self, ownership__time_unreserved=None)
+        return self.ownership.user
     
     def __str__(self):
         return "({0.room}, {0.locker_number}) ".format(self)
