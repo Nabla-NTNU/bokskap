@@ -51,6 +51,7 @@ class OwnershipAdmin(admin.ModelAdmin):
     list_display = ("user", "locker", "time_unreserved", 'is_reserved')
     list_filter = (IsUnregistered,)
     fields = ("user", "locker", "time_reserved", "time_unreserved")
+    search_fields = ("^locker__room", "^locker__locker_number", "^user__username")
     readonly_fields = ("user", "locker", "time_reserved", "time_unreserved")
     actions = ('unreserve',)
 
