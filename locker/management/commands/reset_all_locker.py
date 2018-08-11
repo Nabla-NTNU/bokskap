@@ -3,7 +3,7 @@ import logging
 from django.core.management.base import BaseCommand
 from locker.models import Locker
 
-logger = logging.getLogger(_name_)
+logger = logging.getLogger(__name__)
 
 class Command (BaseCommand):
     help = "Avregistrere samtlige skap, og sender mail til alle brukere der deres skap kan registreres på nytt"
