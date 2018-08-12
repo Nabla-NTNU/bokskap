@@ -47,7 +47,12 @@ class Locker(models.Model):
         self.ownership.unregister()
 
     def reset(self):
-        self.ownership.reset()
+        # only reset the lockers that has an active ownership
+        try:
+            assert(self.ownership != None)
+            self.ownership.reset()
+        except AssertionError:
+            pass
             
     def is_registered(self):
         return bool(self.ownership)
