@@ -12,4 +12,6 @@ class Command (BaseCommand):
         lockers = Locker.objects.all()
         for locker in lockers:
             locker.reset()
-            logger.info(f"Reset locker {locker.locker_number} in {locker.room}")
+            logger.debug(f"Reset locker ({locker.room}, {locker.locker_number})")
+            
+        logger.info(f"Reset all lockers")
