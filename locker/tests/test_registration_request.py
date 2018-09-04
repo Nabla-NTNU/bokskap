@@ -3,35 +3,27 @@ from django.core import mail
 import datetime
 
 from locker.models import RegistrationRequest
-from .fixture_factories import fake_locker_registration_post_request, LockerFactory, RegistrationRequestFactory
+from .fixture_factories import fake_locker_registration_post_request, LockerFactory
 
 
 class TestRegistrationRequest(TestCase):
     def setUp(self):
-        LockerFactory.create_batch(10)
+        lockers = LockerFactory.create_batch(10)
+        self.reg = RegistrationRequest.objects.create(
+            locker=lockers[0],
+            username="testytest",
+            first_name="Test",
+            last_name="Testesen")
 
-    def test_create(self):
+    def test_create_from_post_data(self):
+        """Tests creation of a new registration request from data posted by user"""
         post_data = fake_locker_registration_post_request()
         request = RegistrationRequest.objects.create_from_data(post_data)
 
-        self.assertIsInstance(request, RegistrationRequest)
-
-        self.assertEqual(RegistrationRequest.objects.count(), 1)
-        confirmation_token = request.confirmation_token
-        self.assertIsNotNone(confirmation_token)
+        self.assertIsNotNone(request.confirmation_token)
 
         request2 = RegistrationRequest.objects.get(confirmation_token=request.confirmation_token)
         self.assertEqual(request.pk, request2.pk)
-
-        self.assertIsInstance(request.creation_time, datetime.datetime)
-
-        request.save()
-        self.assertEqual(request.confirmation_token, confirmation_token)
-
-
-class Test2(TestCase):
-    def setUp(self):
-        self.reg = RegistrationRequestFactory.create()
 
     def test_send_email(self):
         self.reg.send_confirmation_email()
