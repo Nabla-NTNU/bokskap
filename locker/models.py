@@ -170,6 +170,8 @@ class RegistrationRequest(models.Model):
         logger.info("Confirmation mail sent to {} for locker: {}".format(email, self.locker))
 
     def confirm(self):
+        if self.has_been_confirmed():
+            return
         user, created = User.objects.get_or_create(username=self.username)
         
         if created:

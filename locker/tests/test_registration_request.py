@@ -54,3 +54,12 @@ class TestRegistrationRequest(TestCase):
         s = str(self.reg)
         self.assertIn(self.reg.username, s)
         self.assertIn(str(self.reg.locker), s)
+
+    def test_confirm_twice(self):
+        """
+        Make sure that confirmations can be done twice without crashing.
+
+        Confirmations should be idempotent.
+        """
+        self.reg.confirm()
+        self.reg.confirm()
