@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='locker',
             name='owner',
-            field=models.ForeignKey(blank=True, null=True, to=settings.AUTH_USER_MODEL, verbose_name='Eier'),
+            field=models.ForeignKey(blank=True, null=True, to=settings.AUTH_USER_MODEL, verbose_name='Eier', on_delete=models.CASCADE),
         ),
         migrations.AlterField(
             model_name='locker',

@@ -138,7 +138,8 @@ class RegistrationRequest(models.Model):
     locker = models.ForeignKey(
         Locker,
         verbose_name="Skap",
-        blank=False)
+        blank=False,
+        on_delete=models.CASCADE)
     username = models.CharField("Brukernavn", max_length=30, blank=False)
     first_name = models.CharField("Fornavn", max_length=30, blank=True)
     last_name = models.CharField("Etternavn", max_length=30, blank=True)

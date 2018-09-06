@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                 ('room', models.CharField(verbose_name=b'Rom', max_length=10, editable=False, choices=[(b'CU1-111', b'CU1-111'), (b'CU2-021', b'CU2-021'), (b'EU1-110', b'EU1-110')])),
                 ('locker_number', models.IntegerField(verbose_name=b'Skapnummer', editable=False)),
                 ('time_reserved', models.DateTimeField(null=True, blank=True)),
-                ('owner', models.ForeignKey(verbose_name=b'Eier', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('owner', models.ForeignKey(verbose_name=b'Eier', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
             },
@@ -44,13 +44,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='inactivelockerreservation',
             name='locker',
-            field=models.ForeignKey(to='locker.Locker'),
+            field=models.ForeignKey(to='locker.Locker', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='inactivelockerreservation',
             name='owner',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
             preserve_default=True,
         ),
     ]
