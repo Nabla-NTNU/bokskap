@@ -4,15 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-
-django = "==1.11.5"
+django = "~=2.1.0"
 "django-bootstrap3" = "*"
 "django-braces" = "*"
 pymysql = "*"
 gunicorn = "*"
 "factory-boy" = "*"
 faker = "*"
-
 
 [dev-packages]
 
