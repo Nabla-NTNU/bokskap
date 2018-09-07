@@ -45,7 +45,7 @@ class OwnershipAdmin(admin.ModelAdmin):
 
     def is_active(self, ownership):
         """Return whether ownership is active"""
-        return ownership.time_unreserved is None
+        return ownership.is_active()
     is_active.boolean = True
     is_active.short_description = "Aktivt"
 

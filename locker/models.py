@@ -92,6 +92,7 @@ class OwnershipManager(models.Manager):
         Create a active ownership given of locker and user
 
         Raises exception if locker is already registered to somebody.
+        Sends email to the new owner.
         """
         if locker.is_registered():
             raise LockerReservedException(f"{locker} is already reserved")
@@ -130,8 +131,13 @@ class Ownership(models.Model):
 
     def unregister(self):
         """Make ownership inactive"""
-        self.time_unreserved = timezone.now()
-        self.save()
+        if self.is_active():
+            self.time_unreserved = timezone.now()
+            self.save()
+
+    def is_active(self):
+        """Is the ownership active"""
+        return self.time_unreserved is None
 
     def reset(self):
         """
@@ -198,7 +204,7 @@ class RegistrationRequest(models.Model):
     def __str__(self):
         return f"{self.username} forespør {self.locker}"
 
-    def save(self, **kwargs):
+    def save(self, **kwargs): #pylint: disable=W0221
         if self.confirmation_token is None:
             self.confirmation_token = random_string()
             logger.info("RegistrationRequest created: <%s>", self)
