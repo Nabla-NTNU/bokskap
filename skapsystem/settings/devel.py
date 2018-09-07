@@ -1,3 +1,7 @@
+# pylint: disable=W0614,wildcard-import
+"""
+Development settings for skapsystem
+"""
 from .base import *
 
 DEBUG = True

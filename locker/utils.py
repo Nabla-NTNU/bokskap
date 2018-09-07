@@ -1,3 +1,6 @@
+"""
+Utility functions for locker app
+"""
 import string
 import random
 import logging
@@ -10,10 +13,9 @@ from django.utils.html import strip_tags
 
 FROM_EMAIL_ADDRESS = "bokskap@nabla.ntnu.no"
 
-logger = logging.getLogger(__name__)
-
 
 def send_template_email(template, context, subject, emails):
+    """Send email using a django-template"""
     from_email = FROM_EMAIL_ADDRESS
 
     html_content = render_to_string(template, context)
@@ -31,34 +33,33 @@ def send_template_email(template, context, subject, emails):
 def send_locker_reminder(user):
     """Sender på epost med info om hvilke skap brukeren har."""
     from .models import Ownership
-    subject = u'Liste over bokskap tilhørende %s' % (user.get_full_name())
+    subject = f'Liste over bokskap tilhørende {user.get_full_name()}'
     ownerships = Ownership.objects.filter(user=user)
-    c = {'ownerships': ownerships}
-    send_template_email('email/locker_reminder.html', c, subject, [user.email])
+    context = {'ownerships': ownerships}
+    send_template_email('email/locker_reminder.html', context, subject, [user.email])
 
 
 def send_confirmation_email(email, locker, confirmation_token, request=None):
     """Sender bekfreftelsesepost til brukeren som prøvde å registrere seg."""
 
-    subject = ('Fullfør registringen av skap {} i {}'
-               .format(locker.locker_number, locker.room))
+    subject = f'Fullfør registringen av skap {locker.locker_number} i {locker.room}'
     confirmation_url = get_confirmation_url(confirmation_token, request=request)
 
-    c = {
+    context = {
         "confirmation_url": confirmation_url,
         "room": locker.room,
         "locker_number": locker.locker_number
     }
-    send_template_email('email/confirmation_email.html', c, subject, [email])
+    send_template_email('email/confirmation_email.html', context, subject, [email])
 
 
 def send_locker_is_registered_email(username, locker):
-    subject = ('Skap {locker.locker_number} i {locker.room} er nå registrert på {username}'
-               .format(**locals()))
+    """Send email telling user that the locker is now registered to them"""
+    subject = f'Skap {locker.locker_number} i {locker.room} er nå registrert på {username}'
     message = render_to_string("email/registration_has_been_confirmed.txt", context=locals())
     email = stud_email_from_username(username)
     send_mail(subject, message, FROM_EMAIL_ADDRESS, [email])
-    logger.info("Sent registration confirmed email to {email}".format(**locals()))
+    logging.getLogger(__name__).info("Sent registration confirmed email to %s", email)
 
 
 def get_confirmation_url(token, request=None):
@@ -67,20 +68,21 @@ def get_confirmation_url(token, request=None):
 
     :param token: The confirmation token to be used in the url
     :param request: Optional HttpRequest-object to get the currently used absolute_uri.
-                    Used mostly for testing-purposes when the absolute url is not the production url.
+                    Used mostly for testing-purposes when the absolute url
+                    is not the production url.
     :return: The abosulte url for confirming the locker_registration.
     """
     relative_url = reverse('registration_confirmation', kwargs={'key': token})
     if request is not None:
         return request.build_absolute_uri(relative_url)
-    else:
-        site = Site.objects.get_current()
-        return "http://{}{}".format(site.domain, relative_url)
+    return f"http://{Site.objects.get_current().domain}{relative_url}"
 
 
 def random_string(length=20, alphabet=string.ascii_letters+string.digits):
+    """Return random string from given alphabet of characters"""
     return "".join(random.choice(alphabet) for _ in range(length))
 
 
 def stud_email_from_username(username):
-    return "{}@stud.ntnu.no".format(username)
+    """Get the corresponding student email address from the username"""
+    return f"{username}@stud.ntnu.no"

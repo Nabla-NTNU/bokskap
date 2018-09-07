@@ -1,12 +1,14 @@
+# pylint: disable=W0614,wildcard-import
+"""
+Production settings for skapsystem
+"""
+from os import environ as env
 import pymysql
-pymysql.install_as_MySQLdb()
-
 from .base import *
 
-import os
-get_env = os.environ.get
+pymysql.install_as_MySQLdb()
 
-DEBUG = bool(get_env('DEBUG', False))
+DEBUG = bool(env.get('DEBUG', False))
 ALLOWED_HOSTS = ['bokskap.nabla.no']
 
 ADMINS = (
@@ -23,13 +25,13 @@ DATABASES = {
     }
 }
 
-DEBUG = bool(get_env('DEBUG', False))
+DEBUG = bool(env.get('DEBUG', False))
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': get_env('MYSQL_DATABASE'),
-        'USER': get_env('MYSQL_USER'),
-        'PASSWORD': get_env('MYSQL_USER_PASSWORD'),
+        'NAME': env.get('MYSQL_DATABASE'),
+        'USER': env.get('MYSQL_USER'),
+        'PASSWORD': env.get('MYSQL_USER_PASSWORD'),
     }
 }

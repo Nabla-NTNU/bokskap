@@ -1,26 +1,14 @@
+"""
+Admin interface for locker app
+"""
 from django.contrib import admin, messages
-from django.contrib.auth.models import User
 from .models import Locker, Ownership, RegistrationRequest, LockerReservedException
 
 
-class HasOwnerListFilter(admin.SimpleListFilter):
-    title = 'status'
-    parameter_name = 'hasowner'
-
-    def lookups(self, request, model_admin):
-        return (
-            ('busy', 'Opptatte skap'),
-            ('empty', 'Tomme skap'),
-        )
-
-    def queryset(self, request, queryset):
-        if self.value() == 'busy':
-            return queryset.filter(user__isnull=False)
-        if self.value() == 'empty':
-            return queryset.filter(user__isnull=True)
-
-        
 class IsUnregistered(admin.SimpleListFilter):
+    """
+    Filters lockers by whether lockers are registered
+    """
     title = 'status'
     parameter_name = 'isunregistered'
 
@@ -31,23 +19,23 @@ class IsUnregistered(admin.SimpleListFilter):
         )
 
     def queryset(self, request, queryset):
-        if self.value() == 'inactive':
-            return queryset.filter(time_unreserved__isnull=False)
-        if self.value() == 'active':
-            return queryset.filter(time_unreserved__isnull=True)
-    
+        is_active = self.value() == 'active'
+        return queryset.filter(time_unreserved__isnull=is_active)
 
 
 @admin.register(Locker)
 class LockerAdmin(admin.ModelAdmin):
+    """Admin interface for Locker mode"""
     list_display = ('locker_number', 'room')
     ordering = ('room', 'locker_number',)
     actions = ('unreserve_locker', 'cut_locker',)
     fields = ('locker_number', 'room')
     readonly_fields = ('locker_number', 'room')
 
+
 @admin.register(Ownership)
 class OwnershipAdmin(admin.ModelAdmin):
+    """Admin interface for Ownership model"""
     list_display = ("user", "locker", "time_unreserved", 'is_reserved')
     list_filter = (IsUnregistered,)
     fields = ("user", "locker", "time_reserved", "time_unreserved")
@@ -56,26 +44,31 @@ class OwnershipAdmin(admin.ModelAdmin):
     actions = ('unreserve',)
 
     def is_reserved(self, ownership):
-        return bool(ownership.time_unreserved is None)
+        """Return whether ownership is active"""
+        return ownership.time_unreserved is None
     is_reserved.boolean = True
     is_reserved.short_description = "Aktivt"
-    
+
     def unreserve(self, request, queryset):
-        for s in queryset.all():
-            s.unregister()
-    
+        """Make all selected ownerships inactive"""
+        for owenership in queryset.all():
+            owenership.unregister()
+
+
 @admin.register(RegistrationRequest)
 class RegistrationRequestAdmin(admin.ModelAdmin):
+    """Admin interface for reqistration requests"""
     actions = ("confirm",)
     list_display = ("username", "locker", "creation_time", "confirmation_time")
     list_filter = ('locker__room',)
     search_fields = ('locker__room', '^locker__locker_number', '^username')
 
     def confirm(self, request, queryset):
+        """Confirm given registration requests"""
         for reg_request in queryset:
             try:
                 reg_request.confirm()
-            except LockerReservedException as e: # Locker allready has an active ownership.
-                messages.error(request, str(e))
+            except LockerReservedException as ex: # Locker allready has an active ownership.
+                messages.error(request, str(ex))
             else:
                 self.message_user(request, f"{reg_request.locker} confirmed.")

@@ -1,23 +1,22 @@
+"""Reset all lockers"""
 import logging
 
 from django.core.management.base import BaseCommand
-from locker.models import Locker, Ownership
+from locker.models import Ownership
 
-logger = logging.getLogger(__name__)
 
-class Command (BaseCommand):
-    help = "Avregistrere samtlige skap, og sender mail til alle brukere der deres skap kan registreres på nytt"
+class Command(BaseCommand):
+    """Management command for resetting all active lockers"""
+    help = ("Avregistrere samtlige skap, "
+            "og sender mail til alle brukere der deres skap kan registreres på nytt")
 
     def handle(self, *args, **options):
         ownerships = Ownership.objects.filter(time_unreserved=None)
-        
-        if(len(ownerships) == 0):
-            logger.info("No ownerships to reset")
-            return
+        logger = logging.getLogger(__name__)
 
         for ownership in ownerships:
             ownership.reset()
-            logger.debug(f"Reset {ownership.locker}, which was owned by {ownership.user}")
+            logger.debug("Reset %s, which was owned by %s",
+                         ownership.locker, ownership.user)
 
-        logger.info(f"Reset {len(ownerships)} ownerships")
-       
+        logger.info("%s ownerships was reset", len(ownerships))

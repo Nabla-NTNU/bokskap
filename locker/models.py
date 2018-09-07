@@ -1,26 +1,33 @@
+"""
+Models for locker app
+"""
 import logging
 
 from django.db import models
 from django.contrib.auth.models import User
-import django.utils.timezone as timezone
+from django.utils import timezone
 
 from .utils import (random_string, stud_email_from_username,
-                    send_confirmation_email, send_locker_is_registered_email, get_confirmation_url, send_template_email)
+                    send_confirmation_email, send_locker_is_registered_email,
+                    get_confirmation_url, send_template_email)
 
 
 logger = logging.getLogger(__name__)
 
 
 class LockerManager(models.Manager):
+    """Locker manager"""
     def get_from_post_data(self, data):
+        """Get a specific locker from the data posted by the user"""
         return self.get(room=data["room"], locker_number=data["locker_number"])
 
 
 class LockerReservedException(Exception):
-    pass
+    """Exception to be raised if a locker has already been reserved"""
 
 
 class Locker(models.Model):
+    """Model representing one of the lockers in the system"""
 
     ROOMS = (
         ('CU1-111', 'CU1-111'),
@@ -40,51 +47,80 @@ class Locker(models.Model):
         verbose_name_plural = "Skap"
 
     def register(self, user):
+        """"
+        Register locker to user
+
+        Raises LockerReservedException if locker already registered.
+        """
         Ownership.objects.create_ownership(locker=self, user=user)
 
     def unregister(self):
+        """Make locker not owned by anyone"""
         self.ownership.unregister()
 
     def reset(self):
-        # only reset the lockers that has an active ownership
-        try:
-            assert(self.ownership != None)
+        """
+        Unregister locker and send email to previous owner
+
+        If the locker is not registered, do nothing.
+        """
+        if self.is_registered():
             self.ownership.reset()
-        except AssertionError:
-            pass
-            
+
     def is_registered(self):
+        """Return whether the locker has a owner"""
         return bool(self.ownership)
 
     @property
     def ownership(self):
+        """"Return current active ownership object"""
         return Ownership.objects.filter(locker=self, time_unreserved=None).first()
-    
+
     @property
     def owner(self):
+        """Return the current owner of the locker"""
         return self.ownership.user
-    
+
     def __str__(self):
-        return "({0.room}, {0.locker_number}) ".format(self)
+        return f"({self.room}, {self.locker_number}) "
 
 
 class OwnershipManager(models.Manager):
+    """Custom manager for Ownwership model"""
     def create_ownership(self, locker, user):
-        if locker.is_registered():
-            raise LockerReservedException(f"{locker} is allready reserved")
+        """
+        Create a active ownership given of locker and user
 
-        ownership = self.create(locker=locker, user=user, time_reserved = timezone.now())
+        Raises exception if locker is already registered to somebody.
+        """
+        if locker.is_registered():
+            raise LockerReservedException(f"{locker} is already reserved")
+
+        ownership = self.create(locker=locker, user=user, time_reserved=timezone.now())
         send_locker_is_registered_email(user.username, locker)
-        logger.info(f"{locker} is now registered to {user}")
+        logger.info("%s is now registered to %s", locker, user)
         return ownership
-        
-    
+
+
 class Ownership(models.Model):
-    locker = models.ForeignKey(Locker, blank=False, null=False, verbose_name="Skap", on_delete=models.CASCADE) # Locker and user should not be deletd, but CASCADE just in case.
-    user = models.ForeignKey(User, blank=False, null=False, verbose_name="Bruker", on_delete=models.CASCADE)
+    """
+    Model representing a registration of a locker.
+
+    It can be either active or inactive.
+    The inactive ownerships are saved to keep track of who used which lockers in the past.
+    """
+    locker = models.ForeignKey(
+        Locker,
+        blank=False,
+        null=False,
+        verbose_name="Skap",
+        on_delete=models.CASCADE)
+    user = models.ForeignKey(User, blank=False, null=False,
+                             verbose_name="Bruker", on_delete=models.CASCADE)
     time_reserved = models.DateTimeField(blank=False, null=True)
-    
-    time_unreserved = models.DateTimeField(blank=True, null=True) # Locker is active until unreserved
+
+    # Locker is active until unreserved
+    time_unreserved = models.DateTimeField(blank=True, null=True)
 
     objects = OwnershipManager()
 
@@ -93,6 +129,7 @@ class Ownership(models.Model):
         verbose_name_plural = "Eierforhold"
 
     def unregister(self):
+        """Make ownership inactive"""
         self.time_unreserved = timezone.now()
         self.save()
 
@@ -108,7 +145,7 @@ class Ownership(models.Model):
 
         self.unregister()
 
-        c = {
+        context = {
             "confirmation_url": get_confirmation_url(request.confirmation_token),
             "room": self.locker.room,
             "locker_number": self.locker.locker_number
@@ -116,10 +153,13 @@ class Ownership(models.Model):
 
         subject = "Registrere skap på nytt for neste semester"
         email = request.get_email()
-        send_template_email("email/locker_reset.html", c, subject, [email])
+        send_template_email("email/locker_reset.html", context, subject, [email])
+
 
 class RegistrationRequestManager(models.Manager):
+    """Custom manager for RegistrationRequest"""
     def create_from_data(self, data):
+        """Create RegistrationRequest from validated user data"""
         return self.create(
             locker=Locker.objects.get_from_post_data(data),
             username=data['username'],
@@ -129,6 +169,9 @@ class RegistrationRequestManager(models.Manager):
 
 
 class RegistrationRequest(models.Model):
+    """
+    Model representing a user's request for a locker
+    """
     confirmation_token = models.CharField(max_length=20, unique=True, blank=True, null=True)
     creation_time = models.DateTimeField(
         verbose_name="Tidspunktet skapet ble forsøkt registrert.",
@@ -144,7 +187,7 @@ class RegistrationRequest(models.Model):
     last_name = models.CharField("Etternavn", max_length=30, blank=True)
 
     confirmation_time = models.DateTimeField(
-            verbose_name="Tidspunktet forspørselen ble bekreftet", null=True, blank=True)
+        verbose_name="Tidspunktet forspørselen ble bekreftet", null=True, blank=True)
 
     objects = RegistrationRequestManager()
 
@@ -153,41 +196,49 @@ class RegistrationRequest(models.Model):
         verbose_name_plural = "Skapforespørsler"
 
     def __str__(self):
-        return "{0.username} forespør {0.locker}".format(self)
+        return f"{self.username} forespør {self.locker}"
 
     def save(self, **kwargs):
         if self.confirmation_token is None:
             self.confirmation_token = random_string()
-            logger.info("RegistrationRequest created: <{}>".format(self))
+            logger.info("RegistrationRequest created: <%s>", self)
         super().save(**kwargs)
 
     def get_email(self):
+        """Return ntnu-student email-address of username in request"""
         return stud_email_from_username(self.username)
 
     def send_confirmation_email(self, request=None):
+        """Send email with link to """
         email = self.get_email()
         send_confirmation_email(email, self.locker, self.confirmation_token, request=request)
-        logger.info("Confirmation mail sent to {} for locker: {}".format(email, self.locker))
+        logger.info("Confirmation mail sent to %s for locker: %s", email, self.locker)
 
     def confirm(self):
+        """
+        Confirm request and register the locker to the user
+
+        If the request is already confirmed
+        """
         if self.has_been_confirmed():
             return
         user, created = User.objects.get_or_create(username=self.username)
-        
+
         if created:
-            user.first_name=self.first_name
-            user.last_name=self.last_name
+            user.first_name = self.first_name
+            user.last_name = self.last_name
             user.save()
-        
+
         try:
             self.locker.register(user)
-        except LockerReservedException as e:
-            logger.info(str(e))
-            raise e
-        
+        except LockerReservedException as ex:
+            logger.info(str(ex))
+            raise ex
+
         self.confirmation_time = timezone.now()
         self.save()
-        logger.info("{} is confirmed".format(self))
+        logger.info("%s is confirmed", self)
 
     def has_been_confirmed(self):
+        """Return if the request has been confirmed"""
         return self.confirmation_time is not None

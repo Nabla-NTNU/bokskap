@@ -1,12 +1,13 @@
+"""Testcases for RegistrationRequest model and views"""
 from django.test import TestCase
 from django.core import mail
-import datetime
 
 from locker.models import RegistrationRequest
 from .fixture_factories import fake_locker_registration_post_request, LockerFactory
 
 
 class TestRegistrationRequest(TestCase):
+    """Testcase for a single registration request"""
     def setUp(self):
         lockers = LockerFactory.create_batch(10)
         self.reg = RegistrationRequest.objects.create(
@@ -26,6 +27,7 @@ class TestRegistrationRequest(TestCase):
         self.assertEqual(request.pk, request2.pk)
 
     def test_send_email(self):
+        """Test sending of confirmation email via a registration request"""
         self.reg.send_confirmation_email()
         email = self.reg.get_email()
 
@@ -39,6 +41,7 @@ class TestRegistrationRequest(TestCase):
         self.assertIn(self.reg.confirmation_token, body)
 
     def test_confirmation(self):
+        """Test confirmation of registration request"""
         self.reg.confirm()
         locker = self.reg.locker
         self.assertTrue(locker.is_registered())
@@ -51,9 +54,10 @@ class TestRegistrationRequest(TestCase):
         self.assertIsNotNone(reg.confirmation_time)
 
     def test_string_representation(self):
-        s = str(self.reg)
-        self.assertIn(self.reg.username, s)
-        self.assertIn(str(self.reg.locker), s)
+        """Make sure the string representation of registration request makes sense"""
+        string_rep = str(self.reg)
+        self.assertIn(self.reg.username, string_rep)
+        self.assertIn(str(self.reg.locker), string_rep)
 
     def test_confirm_twice(self):
         """

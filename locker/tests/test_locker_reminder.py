@@ -1,3 +1,4 @@
+"""Tests for locker reminders"""
 from django.test import TestCase
 from django.core import mail
 from django.contrib.auth.models import User
@@ -7,6 +8,7 @@ from .fixture_factories import LockerFactory
 
 
 class LockerReminderTest(TestCase):
+    """Set up a user and some lockers and test sending locker reminder"""
 
     def setUp(self):
         self.user = User.objects.create(
@@ -15,27 +17,24 @@ class LockerReminderTest(TestCase):
         )
         self.lockers = LockerFactory.create_batch(10)
 
-    def test_send_locker_reminder(self):
-        # Hent brukeren
-        u = self.user
-
-        # Registrer noen skap på brukeren
-        lockers_registered = self.lockers[:2]
-        for l in lockers_registered:
-            l.register(u)
-
+        self.lockers_registered = self.lockers[:2]
+        for locker in self.lockers_registered:
+            locker.register(self.user)
         mail.outbox.clear()
+
+    def test_send_locker_reminder(self):
+        """Test the sending of locker reminder"""
         # Send skappåmindelse
-        send_locker_reminder(u)
+        send_locker_reminder(self.user)
 
         # Hent eposten som burde blitt sendt og skjekk om den ble sendt til
         # brukeren
         self.assertEqual(len(mail.outbox), 1)
         the_mail = mail.outbox.pop()
-        self.assertIn(u.email, the_mail.to)
+        self.assertIn(self.user.email, the_mail.to)
 
         # Skjekk om alle skapene ble nevnt i eposten.
         body = the_mail.body
-        for l in lockers_registered:
-            self.assertIn(l.room, body)
-            self.assertIn(str(l.locker_number), body)
+        for locker in self.lockers_registered:
+            self.assertIn(locker.room, body)
+            self.assertIn(str(locker.locker_number), body)
