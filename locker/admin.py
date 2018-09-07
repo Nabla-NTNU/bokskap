@@ -36,18 +36,18 @@ class LockerAdmin(admin.ModelAdmin):
 @admin.register(Ownership)
 class OwnershipAdmin(admin.ModelAdmin):
     """Admin interface for Ownership model"""
-    list_display = ("user", "locker", "time_unreserved", 'is_reserved')
+    list_display = ("user", "locker", "time_unreserved", 'is_active')
     list_filter = (IsUnregistered,)
     fields = ("user", "locker", "time_reserved", "time_unreserved")
     search_fields = ("^locker__room", "^locker__locker_number", "^user__username")
     readonly_fields = ("user", "locker", "time_reserved", "time_unreserved")
     actions = ('unreserve',)
 
-    def is_reserved(self, ownership):
+    def is_active(self, ownership):
         """Return whether ownership is active"""
         return ownership.time_unreserved is None
-    is_reserved.boolean = True
-    is_reserved.short_description = "Aktivt"
+    is_active.boolean = True
+    is_active.short_description = "Aktivt"
 
     def unreserve(self, request, queryset):
         """Make all selected ownerships inactive"""
