@@ -64,11 +64,11 @@ class RegistrationRequestAdmin(admin.ModelAdmin):
     search_fields = ('locker__room', '^locker__locker_number', '^username')
 
     def confirm(self, request, queryset):
-        """Confirm given registration requests"""
+        """Confirm selected registration requests"""
         for reg_request in queryset:
             try:
                 reg_request.confirm()
-            except LockerReservedException as ex: # Locker allready has an active ownership.
+            except LockerReservedException as ex: # Locker already has an active ownership.
                 messages.error(request, str(ex))
             else:
                 self.message_user(request, f"{reg_request.locker} confirmed.")
