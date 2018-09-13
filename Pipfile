@@ -13,6 +13,10 @@ gunicorn = "*"
 faker = "*"
 
 [dev-packages]
+pylint = "*"
+pylint-django = "*"
+rope = "*"
+coverage = "*"
 
 [requires]
 python_version = "3.6"

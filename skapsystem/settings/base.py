@@ -1,5 +1,6 @@
-# -*- coding: utf-8 -*-
-# Django settings for skapsystem project.
+"""
+Django settings for skapsystem project.
+"""
 
 import os
 

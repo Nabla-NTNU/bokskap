@@ -1,4 +1,6 @@
-# -*- coding: utf-8 -*-
+"""
+Views for locker app
+"""
 import logging
 
 from django.contrib.auth.models import User
@@ -8,7 +10,7 @@ from django.views.generic import ListView, FormView, TemplateView
 
 from braces.views import MessageMixin
 
-from .models import Locker, RegistrationRequest, Ownership
+from .models import Locker, RegistrationRequest
 from .forms import LockerSearchForm, UsernameForm, LockerRegistrationForm
 from .utils import send_locker_reminder, stud_email_from_username
 
@@ -55,17 +57,23 @@ class LockerReminder(MessageMixin, FormView):
         user = User.objects.get(username=username)
 
         send_locker_reminder(user)
-        self.messages.info('En liste over dine skap har blitt sendt til {}'.format(user.email))
+        self.messages.info(f'En liste over dine skap har blitt sendt til {user.email}')
         return redirect("index_page")
 
 
 def view_locker(request, room, locker_number):
+    """"
+    Redirects to the locker registration view
+
+    it is unnecessary and should be refactored away.
+    """
     the_view = LockerRegistrationView.as_view(
         initial={'room': room, 'locker_number': locker_number})
     return the_view(request)
 
 
 class LockerRegistrationView(MessageMixin, FormView):
+    """View for showing the locker registration page and the posting the request"""
     template_name = "locker/locker_registration.html"
     form_class = LockerRegistrationForm
 
@@ -76,23 +84,28 @@ class LockerRegistrationView(MessageMixin, FormView):
         if created or not user.email:
             user.email = stud_email_from_username(user.username)
             user.save()
-        if User.objects.filter(ownership__user=user, ownership__time_unreserved = None).count() >= MAX_LOCKERS_PER_USER:
+        max_lockers = MAX_LOCKERS_PER_USER
+        if User.objects.filter(ownership__user=user,
+                               ownership__time_unreserved=None).count() >= max_lockers:
             self.messages.error(
-                'Beklager, men brukeren {} har nådd maksgrensen på tre skap.'.format(user.username))
-            logger.info("{} tried to register more than max lockers ({})".format(user, MAX_LOCKERS_PER_USER))
+                f'{user.username} har nådd maksgrensen på {max_lockers} skap.')
+            logger.info("%s tried to register more than max lockers (%d)", user, max_lockers)
         else:
             reg = RegistrationRequest.objects.create_from_data(form.cleaned_data)
             reg.send_confirmation_email(request=self.request)
-            self.messages.error('En bekreftelsesepost er sendt til %s. ' % reg.get_email() +  # Error for color in bootstrap
-                                'Husk å bekrefte eposten som nå er sendt, hvis ikke så gjelder ikke reserveringen!')
+            self.messages.error( # Error for color in bootstrap
+                f'En bekreftelsesepost er sendt til {reg.get_email()}. ' +
+                'Husk å bekrefte eposten som nå er sendt, hvis ikke så gjelder ikke reserveringen!')
 
         return redirect("index_page")
 
 
 class RegistrationConfirmation(MessageMixin, TemplateView):
+    """Process the confirmation"""
     template_name = "locker/confirm.html"
 
     def get_request(self):
+        """Get the registration request object corresponding to the key"""
         return get_object_or_404(
             RegistrationRequest,
             confirmation_token=self.kwargs["key"]
@@ -104,16 +117,16 @@ class RegistrationConfirmation(MessageMixin, TemplateView):
         return context
 
     def post(self, request, **kwargs):
+        """Process post request"""
         regreq = self.get_request()
         regreq.confirm()
-        locker = regreq.locker
+        number = regreq.locker.locker_number
+        room = regreq.locker.room
+        username = regreq.username
         self.messages.info(
-            'Skap nummer {} i rom {} er nå registrert på {}'.format(
-                locker.locker_number,
-                locker.room,
-                regreq.username)
+            f'Skap nummer {number} i rom {room} er nå registrert på {username}'
         )
-        return redirect('list_lockers', room=locker.room)
+        return redirect('list_lockers', room=room)
 
 
 class UserList(PermissionRequiredMixin, ListView):

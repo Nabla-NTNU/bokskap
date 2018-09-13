@@ -1,9 +1,15 @@
+"""
+Forms for locker
+"""
 from django import forms
 from django.contrib.auth.models import User
 from .models import Locker
 
 
 class UserForm(forms.Form):
+    """
+    Validate user registration
+    """
     username = forms.CharField(max_length=30, required=True, label='NTNU-brukernavn')
     first_name = forms.CharField(max_length=30, required=True, label='Fornavn')
     last_name = forms.CharField(max_length=30, required=True, label='Etternavn')
@@ -31,7 +37,7 @@ class LockerSearchForm(forms.Form):
     locker_number = forms.IntegerField(required=True, label="Skapnummer")
 
     def clean(self):
-        cleaned_data = super(LockerSearchForm, self).clean()
+        cleaned_data = super().clean()
 
         try:
             room = cleaned_data['room']
@@ -46,8 +52,9 @@ class LockerSearchForm(forms.Form):
 
 
 class LockerRegistrationForm(UserForm, LockerSearchForm):
+    """Combined form for user and locker"""
     def clean(self):
-        cleaned_data = super(LockerRegistrationForm, self).clean()
+        cleaned_data = super().clean()
         if self.locker.is_registered():
             raise forms.ValidationError(
                 "Skapet er allerede i bruk. Velg et annet skap.")
@@ -60,11 +67,10 @@ class UsernameForm(forms.Form):
                                label='NTNU-brukernavn')
 
     def clean(self):
-        cleaned_data = super(UsernameForm, self).clean()
+        cleaned_data = super().clean()
         username = cleaned_data['username']
         try:
             User.objects.get(username=username)
         except User.DoesNotExist:
-            raise forms.ValidationError(
-                'Brukeren {} finnes ikke i skapdatabasen.'.format(username))
+            raise forms.ValidationError(f'Brukeren {username} finnes ikke i skapdatabasen.')
         return cleaned_data
