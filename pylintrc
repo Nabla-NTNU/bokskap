@@ -140,7 +140,9 @@ disable=print-statement,
         deprecated-sys-function,
         exception-escape,
         comprehension-escape,
-        C0103 # urlpatterns in urls.py should not be UPPER_CASE
+        C0103, # urlpatterns in urls.py should not be UPPER_CASE
+	R0201
+
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
