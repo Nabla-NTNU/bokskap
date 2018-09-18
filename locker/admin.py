@@ -19,8 +19,9 @@ class IsUnregistered(admin.SimpleListFilter):
         )
 
     def queryset(self, request, queryset):
-        is_active = self.value() == 'active'
-        return queryset.filter(time_unreserved__isnull=is_active)
+        if self.value():
+            is_active = self.value() == 'active'
+            return queryset.filter(time_unreserved__isnull=is_active)
 
 
 @admin.register(Locker)
