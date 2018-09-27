@@ -1,0 +1,12 @@
+[Unit]
+Description=bokskap daemon
+After=network.target
+
+[Service]
+User=bokskap
+Group=webapps
+WorkingDirectory=/srv/websites/skap
+ExecStart=/usr/bin/pipenv run production
+
+[Install]
+WantedBy=multi-user.target

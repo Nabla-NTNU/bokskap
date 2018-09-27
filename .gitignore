@@ -14,12 +14,7 @@
 # database
 *.db
 
-
-# Lokale instillinger
-/skapsystem/settings/local.py
-
-/venv
-
 /static_collected
 .coverage
 .vscode
+/.env
