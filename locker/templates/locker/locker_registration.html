@@ -18,6 +18,14 @@ registreringen ved å trykke på lenken som blir sendt til din
         <legend>Registrer skap</legend>
         {% csrf_token %}
         {% bootstrap_form form %}
+	Det er ingen lås på skapet og skapet er tomt
+	<input type="checkbox" required><br />
+	
+	Jeg har satt på egen lås
+	<input type="checkbox" required><br />
+	
+	Jeg har skjekket at det står riktig skapnummer øverst på mitt skap.
+	<input type="checkbox" required><br />
         <button type="submit" class="btn btn-primary">
             <span class="glyphicon glyphicon-tag glyphicon-white"></span>
             Registrer skap
