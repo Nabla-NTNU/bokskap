@@ -17,7 +17,7 @@ from .utils import send_locker_reminder, stud_email_from_username
 logger = logging.getLogger(__name__)
 
 
-MAX_LOCKERS_PER_USER = 3
+MAX_LOCKERS_PER_USER = 2
 
 
 class IndexPage(FormView):
