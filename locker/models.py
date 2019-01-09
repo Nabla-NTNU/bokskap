@@ -145,9 +145,7 @@ class Ownership(models.Model):
         """
         request = RegistrationRequest.objects.create(
             locker=self.locker,
-            username=self.user.username,
-            first_name=self.user.first_name,
-            last_name=self.user.last_name)
+            username=self.user.username)
 
         self.unregister()
 
@@ -169,8 +167,6 @@ class RegistrationRequestManager(models.Manager):
         return self.create(
             locker=Locker.objects.get_from_post_data(data),
             username=data['username'],
-            first_name=data['first_name'],
-            last_name=data['last_name'],
         )
 
 
@@ -189,8 +185,6 @@ class RegistrationRequest(models.Model):
         blank=False,
         on_delete=models.CASCADE)
     username = models.CharField("Brukernavn", max_length=30, blank=False)
-    first_name = models.CharField("Fornavn", max_length=30, blank=True)
-    last_name = models.CharField("Etternavn", max_length=30, blank=True)
 
     confirmation_time = models.DateTimeField(
         verbose_name="Tidspunktet forspørselen ble bekreftet", null=True, blank=True)
@@ -229,11 +223,6 @@ class RegistrationRequest(models.Model):
         if self.has_been_confirmed():
             return
         user, created = User.objects.get_or_create(username=self.username)
-
-        if created:
-            user.first_name = self.first_name
-            user.last_name = self.last_name
-            user.save()
 
         try:
             self.locker.register(user)

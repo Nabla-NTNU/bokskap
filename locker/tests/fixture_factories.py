@@ -19,6 +19,8 @@ class LockerFactory(factory.DjangoModelFactory):
 
 def fake_user_dict():
     """Make a dictionary of user info to be used for testing"""
+
+    # Even though the first and last name of users has been removed, this is a good way to generate usernames.
     udict = {
         "first_name": fake.first_name(),
         "last_name": fake.last_name(),

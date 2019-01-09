@@ -12,9 +12,7 @@ class TestRegistrationRequest(TestCase):
         lockers = LockerFactory.create_batch(10)
         self.reg = RegistrationRequest.objects.create(
             locker=lockers[0],
-            username="testytest",
-            first_name="Test",
-            last_name="Testesen")
+            username="testytest")
 
     def test_create_from_post_data(self):
         """Tests creation of a new registration request from data posted by user"""

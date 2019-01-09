@@ -11,8 +11,6 @@ class UserForm(forms.Form):
     Validate user registration
     """
     username = forms.CharField(max_length=30, required=True, label='NTNU-brukernavn')
-    first_name = forms.CharField(max_length=30, required=True, label='Fornavn')
-    last_name = forms.CharField(max_length=30, required=True, label='Etternavn')
 
     def clean_username(self):
         """
