@@ -116,8 +116,8 @@ class RegistrationConfirmation(MessageMixin, TemplateView):
         context["regreq"] = self.get_request()
         return context
 
-    def post(self, request, **kwargs):
-        """Process post request"""
+    def get(self, request, **kwargs):
+        """Process get request"""
         regreq = self.get_request()
         regreq.confirm()
         number = regreq.locker.locker_number
@@ -126,8 +126,7 @@ class RegistrationConfirmation(MessageMixin, TemplateView):
         self.messages.info(
             f'Skap nummer {number} i rom {room} er nå registrert på {username}'
         )
-        return redirect('list_lockers', room=room)
-
+        return super().get(request, **kwargs)
 
 class UserList(PermissionRequiredMixin, ListView):
     """
