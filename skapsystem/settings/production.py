@@ -9,29 +9,20 @@ from .base import *
 pymysql.install_as_MySQLdb()
 
 DEBUG = bool(env.get('DEBUG', False))
-ALLOWED_HOSTS = ['bokskap.nabla.no']
+ALLOWED_HOSTS = ['bokskap.nabla.no', '127.0.0.1']
 
 ADMINS = (
     ('Øystein Hiåsen', 'hiasen@stud.ntnu.no'),
 )
 MANAGERS = ADMINS
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'bokskap',
-        'USER': 'bokskap',
-        'PASSWORD': '',
-    }
-}
-
 DEBUG = bool(env.get('DEBUG', False))
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': env.get('MYSQL_DATABASE'),
-        'USER': env.get('MYSQL_USER'),
-        'PASSWORD': env.get('MYSQL_USER_PASSWORD'),
+        'NAME': env.get('MYSQL_DATABASE', 'bokskap'),
+        'USER': env.get('MYSQL_USER', 'bokskap'),
+        'PASSWORD': env.get('MYSQL_USER_PASSWORD', ''),
     }
 }

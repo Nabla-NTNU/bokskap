@@ -20,3 +20,6 @@ coverage = "*"
 
 [requires]
 python_version = "3.6"
+
+[scripts]
+production = "gunicorn --config deploy/gunicorn.conf skapsystem.wsgi:application"
