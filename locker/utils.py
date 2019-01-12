@@ -34,7 +34,7 @@ def send_locker_reminder(user):
     """Sender på epost med info om hvilke skap brukeren har."""
     from .models import Ownership
     subject = f'Liste over bokskap tilhørende {user.get_full_name()}'
-    ownerships = Ownership.objects.filter(user=user)
+    ownerships = Ownership.objects.filter(user=user, time_unreserved=None)
     context = {'ownerships': ownerships}
     send_template_email('email/locker_reminder.html', context, subject, [user.email])
 
