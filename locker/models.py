@@ -71,6 +71,21 @@ class Locker(models.Model):
         """Return whether the locker has a owner"""
         return bool(self.ownership)
 
+    def is_reserved(self):
+        """Returns True if there exists a RegistrationRequest
+        with reserved=True and where the reserved expiry date has not passed"""
+        is_reserved = RegistrationRequest.objects.filter(
+            locker=self,
+            reserved=True,
+            reserved_expiry__gte=timezone.now()).exists()
+        return is_reserved
+
+    def is_registered_or_reserved(self):
+        """Returns whether the locker is busy in any way,
+        that is if it has an active owner or an
+        active RegistrationRequest"""
+        return self.is_registered() or self.is_reserved()
+
     @property
     def ownership(self):
         """"Return current active ownership object"""
@@ -89,7 +104,7 @@ class OwnershipManager(models.Manager):
     """Custom manager for Ownwership model"""
     def create_ownership(self, locker, user):
         """
-        Create a active ownership given of locker and user
+        Create an active ownership given locker and user
 
         Raises exception if locker is already registered to somebody.
         Sends email to the new owner.
@@ -139,13 +154,15 @@ class Ownership(models.Model):
         """Is the ownership active"""
         return self.time_unreserved is None
 
-    def reset(self):
+    def reset(self, reserved=False, reserved_expiry_date=timezone.now()):
         """
         Avregistrer et skap og sender mail hvor det kan registreres på nytt
         """
         request = RegistrationRequest.objects.create(
             locker=self.locker,
-            username=self.user.username)
+            username=self.user.username,
+            reserved=reserved,
+            reserved_expiry=reserved_expiry_date)
 
         self.unregister()
 
@@ -185,6 +202,18 @@ class RegistrationRequest(models.Model):
         blank=False,
         on_delete=models.CASCADE)
     username = models.CharField("Brukernavn", max_length=30, blank=False)
+
+    """Sometimes one wishes to reserve a locker for a user,
+    for example when deregistering all lockers at the beginning of the year,
+    so that no other user can take this locker for some period of time.
+
+    We do this by creating a RegistrationRequest with `reserved=True`.
+    These will then be reserved until `reserved_expiry`
+    """
+    reserved = models.BooleanField("Er reservert", default=False)
+    reserved_expiry = models.DateTimeField(
+        verbose_name="Utløp av reservasjonsperioden, normalt 14 dager etter creation_time",
+        default=timezone.now)
 
     confirmation_time = models.DateTimeField(
         verbose_name="Tidspunktet forspørselen ble bekreftet", null=True, blank=True)

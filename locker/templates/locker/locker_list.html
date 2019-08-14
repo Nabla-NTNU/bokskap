@@ -15,7 +15,7 @@
         <th>Status</th>
     </tr>
     {% for locker in lockers %}
-        {% if locker.is_registered %}
+        {% if locker.is_registered_or_reserved %}
             <tr class="warning">
                 <td>{{ locker.locker_number }}</td>
                 <td>Opptatt</td>

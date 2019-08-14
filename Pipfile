@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "~=2.1.0"
+django = "==2.1.7"
 "django-bootstrap3" = "*"
 "django-braces" = "*"
 pymysql = "*"

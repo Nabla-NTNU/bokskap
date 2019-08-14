@@ -1,6 +1,9 @@
 """Reset all lockers"""
 import logging
 
+from django.utils import timezone
+from datetime import timedelta
+
 from django.core.management.base import BaseCommand
 from locker.models import Ownership
 
@@ -14,8 +17,13 @@ class Command(BaseCommand):
         ownerships = Ownership.objects.filter(time_unreserved=None)
         logger = logging.getLogger(__name__)
 
+        print("Deregister all lockers and send mail to owners with link to re-register.")
+        print("Reserves lockers for previous owner for 14 days.")
+
+        reservation_expiry_date = timezone.now() + timedelta(days=14)
+
         for ownership in ownerships:
-            ownership.reset()
+            ownership.reset(reserved=True, reserved_expiry_date=reservation_expiry_date)
             logger.debug("Reset %s, which was owned by %s",
                          ownership.locker, ownership.user)
 
