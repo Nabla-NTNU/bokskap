@@ -1,9 +1,8 @@
 """Reset all lockers"""
 import logging
-
-from django.utils import timezone
 from datetime import timedelta
 
+from django.utils import timezone
 from django.core.management.base import BaseCommand
 from locker.models import Ownership
 

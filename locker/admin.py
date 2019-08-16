@@ -22,6 +22,7 @@ class IsUnregistered(admin.SimpleListFilter):
         if self.value():
             is_active = self.value() == 'active'
             return queryset.filter(time_unreserved__isnull=is_active)
+        return None
 
 
 @admin.register(Locker)

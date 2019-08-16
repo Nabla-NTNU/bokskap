@@ -251,7 +251,7 @@ class RegistrationRequest(models.Model):
         """
         if self.has_been_confirmed():
             return
-        user, created = User.objects.get_or_create(username=self.username)
+        user, _ = User.objects.get_or_create(username=self.username)
 
         try:
             self.locker.register(user)

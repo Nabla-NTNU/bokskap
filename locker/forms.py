@@ -22,7 +22,7 @@ class UserForm(forms.Form):
         if "@" in username:
             raise forms.ValidationError(
                 "Dette ser ut som en epostadresse, men du ble bedt om NTNU-Brukernavn!")
-        elif not username.isalnum():
+        if not username.isalnum():
             raise forms.ValidationError(
                 "Gyldige NTNU-brukernavn består kun av bokstaver og tall.")
         return username
@@ -33,6 +33,7 @@ class LockerSearchForm(forms.Form):
 
     room = forms.ChoiceField(choices=Locker.ROOMS, required=True, label="Rom")
     locker_number = forms.IntegerField(required=True, label="Skapnummer")
+    locker = None
 
     def clean(self):
         cleaned_data = super().clean()
