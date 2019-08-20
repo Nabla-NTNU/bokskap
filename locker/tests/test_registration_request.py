@@ -65,3 +65,24 @@ class TestRegistrationRequest(TestCase):
         """
         self.reg.confirm()
         self.reg.confirm()
+
+    def test_create_two_registration_requests(self):
+        """
+        Creating and confirming two registration requests for the same user and locker
+        should have the same effect as creating one registration request.
+        """
+
+        post_data = fake_locker_registration_post_request()
+        request1 = RegistrationRequest.objects.create_from_data(post_data)
+        request2 = RegistrationRequest.objects.create_from_data(post_data)
+        request1.confirm()
+        request2.confirm()
+
+    def test_two_registration_requests_are_the_same(self):
+        """
+        A user can only create a single registration request before it is confirmed.
+        """
+        post_data = fake_locker_registration_post_request()
+        request1 = RegistrationRequest.objects.create_from_data(post_data)
+        request2 = RegistrationRequest.objects.create_from_data(post_data)
+        self.assertEqual(request1.id, request2.id)

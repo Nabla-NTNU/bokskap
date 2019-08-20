@@ -181,10 +181,19 @@ class RegistrationRequestManager(models.Manager):
     """Custom manager for RegistrationRequest"""
     def create_from_data(self, data):
         """Create RegistrationRequest from validated user data"""
-        return self.create(
-            locker=Locker.objects.get_from_post_data(data),
-            username=data['username'],
-        )
+        locker = Locker.objects.get_from_post_data(data)
+        username = data['username']
+        try:
+            return self.get(
+                locker=locker,
+                username=username,
+                confirmation_time=None,
+            )
+        except RegistrationRequest.DoesNotExist:
+            return self.create(
+                locker=locker,
+                username=username,
+            )
 
 
 class RegistrationRequest(models.Model):
@@ -256,8 +265,12 @@ class RegistrationRequest(models.Model):
         try:
             self.locker.register(user)
         except LockerReservedException as ex:
-            logger.info(str(ex))
-            raise ex
+            if self.locker.owner != user:
+                logger.error(
+                    "Trying to confirm a request for a locker "
+                    "which is already registered to someone else.",
+                    exc_info=True)
+                raise ex
 
         self.confirmation_time = timezone.now()
         self.save()

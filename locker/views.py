@@ -10,7 +10,7 @@ from django.views.generic import ListView, FormView, TemplateView
 
 from braces.views import MessageMixin
 
-from .models import Locker, RegistrationRequest
+from .models import Locker, RegistrationRequest, LockerReservedException
 from .forms import LockerSearchForm, UsernameForm, LockerRegistrationForm
 from .utils import send_locker_reminder, stud_email_from_username
 
@@ -119,9 +119,17 @@ class RegistrationConfirmation(MessageMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         """Process get request"""
         regreq = self.get_request()
-        regreq.confirm()
         number = regreq.locker.locker_number
         room = regreq.locker.room
+
+        try:
+            regreq.confirm()
+        except LockerReservedException:
+            self.messages.error(
+                'Beklager, men noen andre har allerde registret '
+                f'skap nummer {number} i rom {room}. '
+                'Vennligst finn et annet skap.'
+            )
         username = regreq.username
         self.messages.info(
             f'Skap nummer {number} i rom {room} er nå registrert på {username}'

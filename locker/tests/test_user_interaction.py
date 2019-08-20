@@ -77,3 +77,65 @@ class TestTypicalUserInteraction(TestCase):
         # The user should also have been sent an email saying
         # that the registration has been confirmed
         self.assertTrue(len(mail.outbox) >= 0)
+
+    def test_trying_to_register_twice_before_confirming(self):
+        """
+        This test was used to reproduce a bug.
+        The bug happened when a user tried to register a locker twice and was sent two different
+        confirmation links, then visited both and got an error.
+        """
+        locker = random.choice(self.lockers)
+        data = {
+            "room": locker.room,
+            "locker_number": locker.locker_number
+        }
+        registration_url = reverse("register_locker", kwargs=data)
+
+        data.update(fake_user_dict())
+
+        self.client.post(registration_url, data=data)
+        url1 = URL_REGEX_PATTERN.findall(mail.outbox[0].body)[0]
+        mail.outbox = []
+        self.client.post(registration_url, data=data)
+        url2 = URL_REGEX_PATTERN.findall(mail.outbox[0].body)[0]
+        mail.outbox = []
+        response1 = self.client.get(url1)
+        self.assertEqual(response1.status_code, 200)
+        response2 = self.client.get(url2)
+        self.assertEqual(response2.status_code, 200)
+
+    def test_two_people_trying_to_register_the_same_locker(self):
+        """
+        What happens when two people try to register the same locker?
+        """
+        locker = random.choice(self.lockers)
+        data = {
+            "room": locker.room,
+            "locker_number": locker.locker_number
+        }
+        registration_url = reverse("register_locker", kwargs=data)
+
+        # A user tries to register a locker
+        data.update(fake_user_dict())
+        self.client.post(registration_url, data=data)
+        url1 = URL_REGEX_PATTERN.findall(mail.outbox[0].body)[0]
+        mail.outbox = []
+
+        # Another user also tries to register the same locker
+        data.update(fake_user_dict())
+        self.client.post(registration_url, data=data)
+        url2 = URL_REGEX_PATTERN.findall(mail.outbox[0].body)[0]
+        mail.outbox = []
+
+        # The first user confirms og takes ownership.
+        response1 = self.client.get(url1)
+        self.assertEqual(response1.status_code, 200)
+        new_owner = locker.owner
+
+        # The second user tries to confirm the locker but it doesn't work
+        # and they get http 200 code hopefully with some information explaining the situation.
+        response2 = self.client.get(url2)
+        self.assertEqual(response2.status_code, 200)
+
+        # The first user is still owner of the locker.
+        self.assertEqual(locker.owner, new_owner)
