@@ -11,9 +11,7 @@ pymysql.install_as_MySQLdb()
 DEBUG = bool(env.get('DEBUG', False))
 ALLOWED_HOSTS = ['bokskap.nabla.no', '127.0.0.1']
 
-ADMINS = (
-    ('Øystein Hiåsen', 'hiasen@stud.ntnu.no'),
-)
+ADMINS = []
 MANAGERS = ADMINS
 
 DEBUG = bool(env.get('DEBUG', False))
