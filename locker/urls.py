@@ -5,7 +5,7 @@ from django.conf.urls import url
 from django.views.generic import TemplateView
 from .views import (IndexPage, LockerRoomView, view_locker,
                     LockerRegistrationView, RegistrationConfirmation, LockerReminder,
-                    UserList)
+                    UserList, UnRegistrationView, unregistration_success)
 
 
 urlpatterns = [
@@ -32,4 +32,10 @@ urlpatterns = [
     url(r'^userlist$',
         UserList.as_view(),
         name='user_list'),
+    url(r'^unregister$',
+        UnRegistrationView.as_view(),
+        name='unregistration'),
+    url(r'^unregsuccess$',
+        unregistration_success,
+        name='unregistration_success'),
 ]

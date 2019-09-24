@@ -30,6 +30,13 @@ def send_template_email(template, context, subject, emails):
     )
 
 
+def send_unregister_confirmation(user, locker):
+    '''Sends an email with confirmation link to unregister locker'''
+    subject = f'Avregistreringsbekreftelse skap {locker}'
+    context = {'locker': locker, 'name':user.get_full_name()}
+    send_template_email('email/locker_uregistration.html', context, subject, [user.email])
+
+
 def send_locker_reminder(user):
     """Sender på epost med info om hvilke skap brukeren har."""
     from .models import Ownership

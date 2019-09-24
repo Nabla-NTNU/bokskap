@@ -11,8 +11,11 @@ from django.views.generic import ListView, FormView, TemplateView
 from braces.views import MessageMixin
 
 from .models import Locker, RegistrationRequest, LockerReservedException
-from .forms import LockerSearchForm, UsernameForm, LockerRegistrationForm
-from .utils import send_locker_reminder, stud_email_from_username
+from .forms import LockerSearchForm, UsernameForm, LockerRegistrationForm, LockerUnregistrationForm
+from .utils import send_locker_reminder, stud_email_from_username, send_unregister_confirmation
+
+
+from django.http import HttpResponse
 
 logger = logging.getLogger(__name__)
 
@@ -144,3 +147,25 @@ class UserList(PermissionRequiredMixin, ListView):
     model = User
     template_name = "locker/user_list.html"
     permission_required = "locker.add"
+
+
+class UnRegistrationView(FormView):
+    template_name = 'locker/unregister.html'
+    form_class = LockerUnregistrationForm
+    success_url = '/unregsuccess'
+    
+    def form_valid(self, form):
+        cd = form.cleaned_data
+        username = cd['username']
+        room = cd['room']
+        locker_number = cd['locker_number']
+
+        user = User.objects.get(username=username)
+        locker = Locker.objects.get(room=room, locker_number=locker_number)
+
+        send_unregister_confirmation(user, locker)
+        return super().form_valid(form)
+
+
+def unregistration_success(request):
+    return HttpResponse('sukkess!')

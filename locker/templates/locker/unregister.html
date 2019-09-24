@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Brukernavn</th>
+                <th>Fullt navn</th>
+                <th>Skap</th>
+            </tr>
+    </table>
+
+
+    <form method="post">{% csrf_token %}
+        {{ form.as_p }}
+    <input type="submit" value="Avregistrer">
+    </form>
+{% endblock %}

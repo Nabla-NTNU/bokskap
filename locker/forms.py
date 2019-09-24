@@ -4,6 +4,7 @@ Forms for locker
 from django import forms
 from django.contrib.auth.models import User
 from .models import Locker
+from .utils import send_unregister_confirmation
 
 
 class UserForm(forms.Form):
@@ -36,6 +37,7 @@ class LockerSearchForm(forms.Form):
     locker = None
 
     def clean(self):
+        print("LockerSearchForm clean")
         cleaned_data = super().clean()
 
         try:
@@ -66,6 +68,7 @@ class UsernameForm(forms.Form):
                                label='NTNU-brukernavn')
 
     def clean(self):
+        print("UsernameForm")
         cleaned_data = super().clean()
         username = cleaned_data['username']
         try:
@@ -73,3 +76,9 @@ class UsernameForm(forms.Form):
         except User.DoesNotExist:
             raise forms.ValidationError(f'Brukeren {username} finnes ikke i skapdatabasen.')
         return cleaned_data
+
+
+class LockerUnregistrationForm(UsernameForm, LockerSearchForm):
+    def clean(self):
+        super().clean()
+
