@@ -3,7 +3,7 @@ Forms for locker
 """
 from django import forms
 from django.contrib.auth.models import User
-from .models import Locker
+from .models import Locker, Ownership
 from .utils import send_unregister_confirmation
 
 
@@ -79,6 +79,27 @@ class UsernameForm(forms.Form):
 
 
 class LockerUnregistrationForm(UsernameForm, LockerSearchForm):
+    """Form for unregistering lockers"""
     def clean(self):
-        super().clean()
+        cleaned_data = super().clean()
+        username = cleaned_data['username']
+        user = User.objects.get(username=username)
+        ownerships = Ownership.objects.filter(user=user, time_unreserved=None)
+        lockers = []
+        for l in ownerships:
+            lockers.append(l.locker)
+        if not self.locker in lockers:
+            raise forms.ValidationError(
+                "Dette skapet er ikke registrert på dette brukernavnet.")
+        return cleaned_data
+
+
+    def send_mail(self):
+        cd = self.clean()
+        username = cd['username']
+        locker = self.locker
+        user = User.objects.get(username=username)
+        send_unregister_confirmation(user, locker)
+
+
 

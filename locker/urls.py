@@ -5,7 +5,8 @@ from django.conf.urls import url
 from django.views.generic import TemplateView
 from .views import (IndexPage, LockerRoomView, view_locker,
                     LockerRegistrationView, RegistrationConfirmation, LockerReminder,
-                    UserList, UnRegistrationView, unregistration_success)
+                    UserList, UnRegistrationView, unregistration_verify, unregistration_success,
+                    unregister)
 
 
 urlpatterns = [
@@ -32,9 +33,15 @@ urlpatterns = [
     url(r'^userlist$',
         UserList.as_view(),
         name='user_list'),
-    url(r'^unregister$',
+    url(r'^unregister_form$',
         UnRegistrationView.as_view(),
-        name='unregistration'),
+        name='unregister_form'),
+    url(r'^unregverify$',
+        unregistration_verify,
+        name='unregistration_verify'),
+    url(r'^unregister/(?P<room>\w+-\d+)/(?P<number>\d+)$',
+        unregister,
+        name='unregister'),
     url(r'^unregsuccess$',
         unregistration_success,
         name='unregistration_success'),

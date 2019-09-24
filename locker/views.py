@@ -152,20 +152,24 @@ class UserList(PermissionRequiredMixin, ListView):
 class UnRegistrationView(FormView):
     template_name = 'locker/unregister.html'
     form_class = LockerUnregistrationForm
-    success_url = '/unregsuccess'
+    success_url = '/unregverify'
     
     def form_valid(self, form):
-        cd = form.cleaned_data
-        username = cd['username']
-        room = cd['room']
-        locker_number = cd['locker_number']
-
-        user = User.objects.get(username=username)
-        locker = Locker.objects.get(room=room, locker_number=locker_number)
-
-        send_unregister_confirmation(user, locker)
+        form.send_mail()
         return super().form_valid(form)
 
 
+def unregistration_verify(request):
+    return HttpResponse('Epost med bekreftelseslink er sendt til din studentmail.')
+
+
+def unregister(request, room, number):
+    locker = Locker.objects.get(room=room, locker_number=number)
+    locker.unregister()
+    return redirect(unregistration_success)
+
+
 def unregistration_success(request):
-    return HttpResponse('sukkess!')
+    return HttpResponse('Skapet er nå avregistrert.')
+
+
