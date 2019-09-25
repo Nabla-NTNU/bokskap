@@ -4,6 +4,7 @@ Utility functions for locker app
 import string
 import random
 import logging
+import hashlib
 
 from django.core.mail import send_mail
 from django.urls import reverse
@@ -30,16 +31,26 @@ def send_template_email(template, context, subject, emails):
     )
 
 
+def encrypt_string(hash_string):
+    sha_signature = hashlib.sha256(hash_string.encode()).hexdigest()
+    return sha_signature
+
+
 def send_unregister_confirmation(user, locker):
+    from .models import Ownership
     '''Sends an email with confirmation link to unregister locker'''
+    ownership_id = Ownership.objects.get(user=user, locker=locker, time_unreserved=None).id
+    ownership_time = Ownership.objects.get(user=user, locker=locker,time_unreserved=None).time_reserved
+    sha_string = str(ownership_id) + str(ownership_time)
+    sha_id = encrypt_string(sha_string)
     subject = f'Avregistreringsbekreftelse skap {locker}'
-    context = {'locker': locker, 'name':user.get_full_name()}
+    context = {'locker': locker, 'name':user.get_full_name(), 'sha_id': sha_id}
     send_template_email('email/locker_unregistration.html', context, subject, [user.email])
 
 
 def send_locker_reminder(user):
-    """Sender på epost med info om hvilke skap brukeren har."""
     from .models import Ownership
+    """Sender på epost med info om hvilke skap brukeren har."""
     subject = f'Liste over bokskap tilhørende {user.get_full_name()}'
     ownerships = Ownership.objects.filter(user=user, time_unreserved=None)
     context = {'ownerships': ownerships}
@@ -48,7 +59,6 @@ def send_locker_reminder(user):
 
 def send_confirmation_email(email, locker, confirmation_token, request=None):
     """Sender bekfreftelsesepost til brukeren som prøvde å registrere seg."""
-
     subject = f'Fullfør registringen av skap {locker.locker_number} i {locker.room}'
     confirmation_url = get_confirmation_url(confirmation_token, request=request)
 

@@ -39,7 +39,7 @@ urlpatterns = [
     url(r'^unregverify$',
         unregistration_verify,
         name='unregistration_verify'),
-    url(r'^unregister/(?P<room>\w+-\d+)/(?P<number>\d+)$',
+    url(r'^unregister/(?P<room>\w+-\d+)/(?P<number>\d+)/(?P<sha_id>\w+)$',
         unregister,
         name='unregister'),
     url(r'^unregsuccess$',

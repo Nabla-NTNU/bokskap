@@ -7,12 +7,13 @@ from django.contrib.auth.models import User
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.shortcuts import redirect, get_object_or_404
 from django.views.generic import ListView, FormView, TemplateView
+from django.core.exceptions import ObjectDoesNotExist
 
 from braces.views import MessageMixin
 
-from .models import Locker, RegistrationRequest, LockerReservedException
+from .models import Locker, RegistrationRequest, LockerReservedException, Ownership
 from .forms import LockerSearchForm, UsernameForm, LockerRegistrationForm, LockerUnregistrationForm
-from .utils import send_locker_reminder, stud_email_from_username, send_unregister_confirmation
+from .utils import send_locker_reminder, stud_email_from_username, encrypt_string
 
 
 from django.http import HttpResponse
@@ -163,10 +164,22 @@ def unregistration_verify(request):
     return HttpResponse('Epost med bekreftelseslink er sendt til din studentmail.')
 
 
-def unregister(request, room, number):
-    locker = Locker.objects.get(room=room, locker_number=number)
-    locker.unregister()
-    return redirect(unregistration_success)
+def unregister(request, room, number, sha_id):
+    try:
+        locker = Locker.objects.get(room=room, locker_number=number)
+        ownership = Ownership.objects.get(locker=locker, time_unreserved=None)
+    except ObjectDoesNotExist as e:
+        msg = "Det ser ut til å være noe feil med lenken din. Ta kontakt med WebKom dersom du tror dette er feil.\n"
+        msg += "Oppgi denne feilen:\n"
+        msg += "DoesNotExist exception: " + str(e)
+        return HttpResponse(msg)
+    sha_string = str(ownership.id) + str(ownership.time_reserved)
+    sha_id_correct = encrypt_string(sha_string)
+    if sha_id == sha_id_correct:
+        locker.unregister()
+        return redirect(unregistration_success)
+    else:
+        return HttpResponse('Feil! Det ser ut som at du prøver å avregistrere feil skap.')
 
 
 def unregistration_success(request):
