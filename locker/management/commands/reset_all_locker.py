@@ -10,7 +10,7 @@ from locker.models import Ownership
 class Command(BaseCommand):
     """Management command for resetting all active lockers"""
     help = ("Avregistrere samtlige skap, "
-            "og sender mail til alle brukere der deres skap kan registreres på nytt")
+            "og sender mail til alle brukere der deres skap kan registreres paa nytt")
 
     def handle(self, *args, **options):
         ownerships = Ownership.objects.filter(time_unreserved=None)
