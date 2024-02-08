@@ -19,7 +19,7 @@ rope = "*"
 coverage = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.7"
 
 [scripts]
 production = "gunicorn --config deploy/gunicorn.conf skapsystem.wsgi:application"
