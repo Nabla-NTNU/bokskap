@@ -5,8 +5,9 @@ After=network.target
 [Service]
 User=bokskap
 Group=webapps
-WorkingDirectory=/srv/skap
-ExecStart=/usr/bin/env pipenv run production
+WorkingDirectory=/srv/bokskap
+# ExecStart=/usr/bin/env pipenv run production
+ExecStart=/var/websites/bokskap/.pyenv/shims/pipenv run production
 
 [Install]
 WantedBy=multi-user.target

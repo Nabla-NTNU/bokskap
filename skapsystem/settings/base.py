@@ -114,3 +114,6 @@ LOGGING = {
 
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 LOGIN_URL = "/admin/login"
+
+# Sending email
+DEFAULT_FROM_EMAIL = "bokskap@mail.nabla.no"
