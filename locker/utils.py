@@ -12,8 +12,7 @@ from django.contrib.sites.models import Site
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
-FROM_EMAIL_ADDRESS = "bokskap@nabla.ntnu.no"
-
+FROM_EMAIL_ADDRESS = "bokskap@nabla.no"
 
 def send_template_email(template, context, subject, emails):
     """Send email using a django-template"""
