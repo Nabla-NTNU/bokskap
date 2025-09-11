@@ -24,3 +24,6 @@ DATABASES = {
         'PASSWORD': env.get('MYSQL_USER_PASSWORD', ''),
     }
 }
+
+# Sett email backend til Gmail API
+EMAIL_BACKEND = "lib.nabla_email_backend.Nabla_email_backend"
