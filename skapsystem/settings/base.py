@@ -6,6 +6,7 @@ import os
 
 DEBUG = True
 
+get_env = os.environ.get
 
 ALLOWED_HOSTS = ["bokskap.nabla.no"]
 TIME_ZONE = 'Europe/Oslo'
@@ -88,7 +89,9 @@ LOGGING = {
             'level': 'INFO',
             'filters': [],
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': os.path.join(LOG_FOLDER, 'info.log'),
+            'filename': get_env(
+                "DJANGO_LOG_PATH", "/var/log/django/bokskap/error.log"
+            ),
             'when': 'W0',
             'formatter': 'default',
         },
