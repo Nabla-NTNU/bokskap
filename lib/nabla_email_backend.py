@@ -43,7 +43,6 @@ class Nabla_email_backend(BaseEmailBackend):
         mail["BCC"] = email_message.bcc
 
         if email_message.from_email != IMPERSONATED_ADMIN:
-            mail["CC"] = email_message.from_email
             mail["Reply-To"] = email_message.from_email
         else:
             mail["CC"] = ", ".join(email_message.cc)
