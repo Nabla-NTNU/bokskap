@@ -28,8 +28,6 @@ STATICFILES_FINDERS = (
 
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 
-SECRET_KEY = 'kw+&u!11%q6kfqofukwx^()ka943b=4ee9cb@urn^w$$9(brcn'
-
 MIDDLEWARE = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
