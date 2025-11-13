@@ -6,6 +6,7 @@ import os
 
 DEBUG = True
 
+get_env = os.environ.get
 
 ALLOWED_HOSTS = ["bokskap.nabla.no"]
 TIME_ZONE = 'Europe/Oslo'
@@ -26,8 +27,6 @@ STATICFILES_FINDERS = (
 )
 
 ADMIN_MEDIA_PREFIX = '/static/admin/'
-
-SECRET_KEY = 'kw+&u!11%q6kfqofukwx^()ka943b=4ee9cb@urn^w$$9(brcn'
 
 MIDDLEWARE = (
     'django.middleware.common.CommonMiddleware',
@@ -88,7 +87,9 @@ LOGGING = {
             'level': 'INFO',
             'filters': [],
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': os.path.join(LOG_FOLDER, 'info.log'),
+            'filename': get_env(
+                "DJANGO_LOG_PATH", "/var/log/django/bokskap/error.log"
+            ),
             'when': 'W0',
             'formatter': 'default',
         },
@@ -114,3 +115,6 @@ LOGGING = {
 
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 LOGIN_URL = "/admin/login"
+
+# Sending email
+DEFAULT_FROM_EMAIL = "bokskap@mail.nabla.no"

@@ -14,7 +14,6 @@ from django.utils.html import strip_tags
 
 FROM_EMAIL_ADDRESS = "bokskap@nabla.no"
 
-
 def send_template_email(template, context, subject, emails):
     """Send email using a django-template"""
     from_email = FROM_EMAIL_ADDRESS
