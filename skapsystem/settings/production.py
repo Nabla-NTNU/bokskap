@@ -11,6 +11,8 @@ pymysql.install_as_MySQLdb()
 DEBUG = bool(env.get('DEBUG', False))
 ALLOWED_HOSTS = ['bokskap.nabla.no', '127.0.0.1']
 
+SECRET_KEY = env.get("SECRET_KEY")
+
 ADMINS = []
 MANAGERS = ADMINS
 
