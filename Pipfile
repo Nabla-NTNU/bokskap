@@ -11,6 +11,7 @@ pymysql = "*"
 gunicorn = "*"
 "factory-boy" = "*"
 faker = "*"
+google-api-python-client = "2.*"
 
 [dev-packages]
 pylint = "*"
@@ -19,7 +20,7 @@ rope = "*"
 coverage = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.9"
 
 [scripts]
 production = "gunicorn --config deploy/gunicorn.conf skapsystem.wsgi:application"
