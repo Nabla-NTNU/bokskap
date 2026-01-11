@@ -27,5 +27,53 @@ DATABASES = {
     }
 }
 
+SECRET_KEY = get_env("SECRET_KEY")
+
+LOG_FOLDER = VARIABLE_ROOT
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'file': {
+            'level': 'INFO',
+            'filters': [],
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': get_env(
+                "DJANGO_LOG_PATH", "/var/log/django/bokskap/error.log"
+            ),
+            'when': 'W0',
+            'formatter': 'default',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'locker': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        }
+    },
+    'formatters': {
+        'default': {
+            'format': '%(asctime)s %(levelname)s %(name)s: %(message)s',
+        },
+    },
+}
+
 # Sett email backend til Gmail API
 EMAIL_BACKEND = "lib.nabla_email_backend.Nabla_email_backend"
