@@ -1,3 +1,6 @@
+# Secrets are stored here
+.env
+
 # pycharm instillinger
 .idea
 
@@ -18,3 +21,6 @@
 .coverage
 .vscode
 /.env
+
+# secret
+lib/privateKey.json

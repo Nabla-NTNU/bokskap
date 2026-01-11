@@ -27,6 +27,8 @@ DATABASES = {
     }
 }
 
+SECRET_KEY = get_env("SECRET_KEY")
+
 LOG_FOLDER = VARIABLE_ROOT
 
 LOGGING = {
@@ -72,3 +74,6 @@ LOGGING = {
         },
     },
 }
+
+# Sett email backend til Gmail API
+EMAIL_BACKEND = "lib.nabla_email_backend.Nabla_email_backend"

@@ -5,6 +5,10 @@ Development settings for skapsystem
 from .base import *
 
 DEBUG = True
+
+# Choose Nabla_email_backend for the gmail api, or console to see
+#   in the terminal where you run the server
+# EMAIL_BACKEND = "lib.nabla_email_backend.Nabla_email_backend"
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 SECRET_KEY = "my_not_so_secret_development_key"
