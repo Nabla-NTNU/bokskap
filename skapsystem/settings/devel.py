@@ -7,6 +7,8 @@ from .base import *
 DEBUG = True
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+SECRET_KEY = "my_not_so_secret_development_key"
+
 ALLOWED_HOSTS = ["bokskap.nabla.no", "localhost", "127.0.0.1"]
 
 DATABASES = {
