@@ -13,10 +13,14 @@ class Command(BaseCommand):
             "og sender mail til alle brukere der deres skap kan registreres paa nytt")
 
     def handle(self, *args, **options):
-        ownerships = Ownership.objects.filter(time_unreserved=None)
+        reservation_deadline = timezone.now() - timedelta(weeks=8)
+        ownerships = Ownership.objects.filter(
+            time_unreserved=None,
+            time_reserved__lt=reservation_deadline
+        )
         logger = logging.getLogger(__name__)
 
-        print("Deregister all lockers and send mail to owners with link to re-register.")
+        print("Deregister all registrations older than 8 weeks. Send mail to owners with link to re-register.")
         print("Reserves lockers for previous owner for 14 days.")
 
         reservation_expiry_date = timezone.now() + timedelta(days=14)
@@ -26,4 +30,4 @@ class Command(BaseCommand):
             logger.debug("Reset %s, which was owned by %s",
                          ownership.locker, ownership.user)
 
-        logger.info("%s ownerships was reset", len(ownerships))
+        logger.info("%s ownerships was reset", ownerships.count())
